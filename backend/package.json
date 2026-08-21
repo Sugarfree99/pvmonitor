@@ -6,7 +6,10 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "sim": "node sim/kostalSimulator.js",
+    "dev:sim": "node sim/dev.js",
+    "start:sim": "node sim/dev.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",

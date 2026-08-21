@@ -29,10 +29,14 @@ starta helt autonomt efter strömavbrott utan handpåläggning.
 PV_Monitor/
 ├── backend/            Node.js/Express + Modbus-poller + SQLite
 │   ├── src/
-│   └── config/inverters.json   ← IP-adresser & Modbus-register per omformare
+│   ├── sim/            KOSTAL Modbus-simulator (för test före driftsättning)
+│   └── config/
+│       ├── inverters.json       ← PRODUKTION: riktiga IP-adresser
+│       └── inverters.sim.json   ← SIMULERING: pekar mot lokala simulatorn
 ├── frontend/           React (Vite) kiosk-SPA
 │   └── src/
-└── deploy/             Debian-installation (systemd, openbox, lightdm)
+├── deploy/             Debian-installation (systemd, openbox, lightdm)
+└── docs/               MODBUS.md (registerkarta), SECURITY.md (hemligheter)
 ```
 
 ## Lokal utveckling
@@ -49,12 +53,38 @@ npm install
 npm run dev            # startar SPA på http://localhost:5173
 ```
 
-Backenden kan köras utan fysiska omformare genom att sätta `MOCK=1` i miljön —
-då genereras syntetisk data så att gränssnittet kan utvecklas offline.
+## Simulering av omformarna (rekommenderas före driftsättning)
+
+Innan de fysiska omformarna är tillgängliga körs en inbyggd **KOSTAL Modbus
+TCP-simulator** som emulerar alla tre omformarna lokalt. Backenden pollar
+simulatorn via **exakt samma Modbus-kod** som mot riktig hårdvara – enda
+skillnaden är vilken config (IP-adresser) som används.
 
 ```bash
-MOCK=1 npm run dev
+cd backend
+npm install
+npm run dev:sim        # startar simulator + backend tillsammans
+
+# i ett nytt fönster:
+cd frontend && npm run dev
 ```
+
+Simulatorn genererar realistiska värden som följer en solkurva över dygnet.
+
+**Vid driftsättning** behöver du bara:
+
+1. Fylla i riktiga IP-adresser i [`backend/config/inverters.json`](backend/config/inverters.json).
+2. Lägga in ev. hemligheter i `backend/.env` (se nedan).
+3. Låta bli att starta simulatorn.
+
+Ingen kodändring krävs. Enklare fallback utan Modbus finns via `MOCK=1`.
+
+## Var läggs inloggningsuppgifter och känslig data?
+
+**I `backend/.env`** (gitignorerad, committas aldrig) – aldrig i `inverters.json`.
+Modbus TCP är normalt oautentiserat, så oftast behövs inga inloggningsuppgifter
+alls. Se [`docs/SECURITY.md`](docs/SECURITY.md) för fullständig beskrivning.
+
 
 ## Konfiguration av omformare
 

@@ -45,6 +45,8 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
   echo "    Skapade backend/.env från exempel – kontrollera värdena."
 fi
+# Lås ner .env – kan innehålla känsliga uppgifter
+chmod 600 .env
 npm install --no-audit --no-fund
 
 echo "==> 5/8  Frontend – npm install + build"
