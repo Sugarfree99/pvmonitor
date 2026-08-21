@@ -1,4 +1,5 @@
 import React from "react";
+import CapacityBar from "./CapacityBar.jsx";
 import {
   formatPower,
   formatEnergyKwh,
@@ -42,6 +43,8 @@ export default function InverterCard({ inverter, co2Factor = 0.4 }) {
           <span className="inv-card__power-unit">{power.unit}</span>
         </div>
       </div>
+
+      <CapacityBar powerW={inverter.powerW} capacityW={inverter.capacityW} />
 
       <div className="inv-card__metrics">
         <Metric label="Idag" formatted={formatEnergyKwh(inverter.energyTodayWh)} />

@@ -23,6 +23,16 @@ db.exec(`
   );
 `);
 
+// Timvis produktion (Wh) per anläggning + '__all__' för totalen, för stapeldiagram.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS hourly (
+    bucket       TEXT NOT NULL,
+    site_id      TEXT NOT NULL,
+    produced_wh  REAL NOT NULL DEFAULT 0,
+    PRIMARY KEY (bucket, site_id)
+  );
+`);
+
 const upsertStmt = db.prepare(`
   INSERT INTO latest (inverter_id, site_id, name, model, online, power_w,
                       energy_today_wh, energy_year_wh, energy_total_wh, updated_at)
@@ -65,6 +75,35 @@ const selectByIdStmt = db.prepare(`SELECT * FROM latest WHERE inverter_id = ?`);
 
 export function getLatestById(id) {
   return selectByIdStmt.get(id);
+}
+
+// Timbucket i lokal tid: "YYYY-MM-DDTHH".
+export function hourBucket(d = new Date()) {
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}`;
+}
+
+const addProductionStmt = db.prepare(`
+  INSERT INTO hourly (bucket, site_id, produced_wh) VALUES (?, ?, ?)
+  ON CONFLICT(bucket, site_id) DO UPDATE SET produced_wh = produced_wh + excluded.produced_wh
+`);
+
+export function addProduction(bucket, siteId, wh) {
+  addProductionStmt.run(bucket, siteId, wh);
+}
+
+const getHourlyStmt = db.prepare(
+  `SELECT bucket, site_id, produced_wh FROM hourly WHERE bucket >= ? ORDER BY bucket ASC`
+);
+
+export function getHourlySince(minBucket) {
+  return getHourlyStmt.all(minBucket);
+}
+
+const pruneHourlyStmt = db.prepare(`DELETE FROM hourly WHERE bucket < ?`);
+
+export function pruneHourly(minBucket) {
+  pruneHourlyStmt.run(minBucket);
 }
 
 // Backar RAM-databasen till beständig disk (anropas periodiskt av backuparen).

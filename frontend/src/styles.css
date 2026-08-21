@@ -337,6 +337,118 @@ body {
   margin-left: 0.3rem;
 }
 
+/* ---------- Kapacitetsstapel ---------- */
+.hero-capbar {
+  max-width: 720px;
+  margin: 0 auto clamp(1.5rem, 4vh, 3rem);
+  width: 100%;
+}
+.capbar {
+  margin-top: 0.9rem;
+  width: 100%;
+}
+.capbar__top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+.capbar__pct {
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-weight: 800;
+  color: var(--accent);
+}
+.capbar__cap {
+  font-size: clamp(0.8rem, 1.4vw, 1.1rem);
+  color: var(--text-dim);
+}
+.capbar__track {
+  height: clamp(12px, 1.8vh, 20px);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.capbar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffd54a, var(--accent));
+  box-shadow: 0 0 18px rgba(255, 179, 0, 0.4);
+  transition: width 0.8s ease;
+}
+
+/* ---------- Produktionsdiagram ---------- */
+.view--production .chart {
+  flex: 1;
+}
+.chart {
+  display: flex;
+  gap: 0.8rem;
+  align-items: stretch;
+  min-height: 0;
+}
+.chart--empty {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+}
+.chart__yaxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.4rem 0 1.8rem;
+  color: var(--text-dim);
+  font-size: clamp(0.75rem, 1.3vw, 1rem);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  min-width: 2.5rem;
+  text-align: right;
+}
+.chart__yunit {
+  position: absolute;
+  top: -1.4rem;
+  right: 0;
+  color: var(--text-dim);
+}
+.chart__bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(2px, 0.6vw, 8px);
+}
+.chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+.chart__bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.chart__bar {
+  width: 78%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--accent), #b9781a);
+  transition: height 0.6s ease;
+  min-height: 0;
+}
+.chart__bar--current {
+  background: linear-gradient(180deg, #7fe0a3, var(--green));
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.5);
+}
+.chart__label {
+  height: 1.5rem;
+  line-height: 1.5rem;
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Sidfot ---------- */
 .app__footer {
   height: clamp(48px, 7vh, 84px);

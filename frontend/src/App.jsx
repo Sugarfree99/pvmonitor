@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useData } from "./hooks/useData.js";
+import { useHistory } from "./hooks/useHistory.js";
 import OverviewView from "./components/OverviewView.jsx";
+import ProductionView from "./components/ProductionView.jsx";
 import SiteView from "./components/SiteView.jsx";
 
 const ROTATE_MS = 15_000;
@@ -54,13 +56,17 @@ function useStatus(data, error, lastUpdated) {
 
 export default function App() {
   const { data, error, lastUpdated } = useData(5000);
+  const history = useHistory(60000);
   const [index, setIndex] = useState(0);
   const status = useStatus(data, error, lastUpdated);
 
-  // Bygg listan med vyer: översikt + en vy per anläggning.
+  // Bygg listan med vyer: översikt, produktion idag, en vy per anläggning.
   const views = [];
   if (data) {
     views.push(<OverviewView key="overview" snapshot={data} />);
+    views.push(
+      <ProductionView key="production" history={history} snapshot={data} />
+    );
     for (const site of data.sites) {
       views.push(
         <SiteView key={site.id} site={site} co2Factor={data.co2FactorKgPerKwh} />

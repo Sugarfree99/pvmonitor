@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { config } from "./config.js";
 import { startPoller, stopPoller } from "./poller.js";
-import { buildSnapshot } from "./aggregate.js";
+import { buildSnapshot, buildHistory } from "./aggregate.js";
 import { backupTo } from "./db.js";
 
 const app = express();
@@ -16,6 +16,12 @@ app.get("/api/health", (_req, res) => {
 // Hela ögonblicksbilden (översikt + alla anläggningar/omformare).
 app.get("/api/data", (_req, res) => {
   res.json(buildSnapshot());
+});
+
+// Timvis produktion (kWh) för stapeldiagrammet.
+app.get("/api/history", (req, res) => {
+  const hours = Math.min(Math.max(Number(req.query.hours ?? 24), 1), 72);
+  res.json(buildHistory(hours));
 });
 
 const server = app.listen(config.port, config.host, () => {

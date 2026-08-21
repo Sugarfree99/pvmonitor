@@ -1,6 +1,7 @@
 import React from "react";
 import StatCard from "./StatCard.jsx";
 import Logo from "./Logo.jsx";
+import CapacityBar from "./CapacityBar.jsx";
 import {
   formatPower,
   formatEnergyKwh,
@@ -30,6 +31,10 @@ export default function OverviewView({ snapshot }) {
           {power.value}
           <span className="hero__unit">{power.unit}</span>
         </div>
+      </div>
+
+      <div className="hero-capbar">
+        <CapacityBar powerW={t.powerW} capacityW={t.capacityW} />
       </div>
 
       <div className="stat-grid stat-grid--4">
