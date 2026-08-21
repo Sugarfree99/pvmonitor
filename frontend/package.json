@@ -1,0 +1,19 @@
+{
+  "name": "pvmonitor-frontend",
+  "version": "1.0.0",
+  "description": "Kiosk-SPA (React + Vite) som visar KOSTAL-statistik i en roterande karusell.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host --port 5173"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

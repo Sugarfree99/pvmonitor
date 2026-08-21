@@ -1,0 +1,23 @@
+{
+  "name": "pvmonitor-backend",
+  "version": "1.0.0",
+  "description": "Backend som pollar KOSTAL-omformare via Modbus TCP och exponerar ett JSON-API.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "modbus-serial": "^8.0.17"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

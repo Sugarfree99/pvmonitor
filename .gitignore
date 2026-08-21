@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+frontend/dist/
+backend/dist/
+
+# Runtime data
+*.sqlite
+*.sqlite-journal
+*.db
+data/
+backend/data/
+
+# Environment
+.env
+backend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

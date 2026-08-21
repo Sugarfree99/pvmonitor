@@ -1,0 +1,339 @@
+:root {
+  --bg-0: #0a0f1e;
+  --bg-1: #111a33;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-border: rgba(255, 255, 255, 0.09);
+  --text: #eef2fb;
+  --text-dim: #93a0bd;
+  --accent: #ffb300;
+  --green: #34d399;
+  --green-dim: #0f5132;
+  --red: #f87171;
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: radial-gradient(1200px 800px at 70% -10%, #1b2c55 0%, var(--bg-0) 55%),
+    var(--bg-0);
+  overflow: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Laddning ---------- */
+.app--loading {
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+}
+.spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Scen / vy-övergångar ---------- */
+.stage {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.stage__view {
+  position: absolute;
+  inset: 0;
+  padding: clamp(2rem, 4vw, 4.5rem);
+  display: flex;
+  flex-direction: column;
+}
+.fade-in {
+  animation: fade 700ms ease;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.view__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: clamp(1.5rem, 3vh, 3rem);
+}
+.view__title {
+  font-size: clamp(1.8rem, 3.4vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.view__summary {
+  margin-left: auto;
+  font-size: clamp(1.1rem, 2vw, 1.8rem);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.view__summary em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 600;
+}
+.view__summary-sep {
+  opacity: 0.4;
+}
+
+/* ---------- Översiktsvy ---------- */
+.hero {
+  text-align: center;
+  margin: auto 0 clamp(1.5rem, 4vh, 3.5rem);
+}
+.hero__label {
+  font-size: clamp(1.2rem, 2.4vw, 2rem);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 0.5rem;
+}
+.hero__value {
+  font-size: clamp(5rem, 16vw, 14rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 60px rgba(255, 179, 0, 0.35);
+}
+.hero__unit {
+  font-size: 0.35em;
+  color: var(--text);
+  margin-left: 0.3rem;
+  font-weight: 600;
+}
+
+.stat-grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 2rem);
+}
+.stat-grid--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 22px;
+  padding: clamp(1.2rem, 2.5vw, 2.2rem);
+  box-shadow: var(--shadow);
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+.stat-card--accent {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: linear-gradient(180deg, rgba(52, 211, 153, 0.12), var(--bg-card));
+}
+.stat-card__icon {
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  margin-bottom: 0.4rem;
+}
+.stat-card__label {
+  font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.4rem;
+}
+.stat-card__value {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+}
+.stat-card__unit {
+  font-size: 0.4em;
+  color: var(--text-dim);
+  margin-left: 0.35rem;
+  font-weight: 600;
+}
+
+/* ---------- Anläggningsvy ---------- */
+.inv-row {
+  flex: 1;
+  display: grid;
+  gap: clamp(1.2rem, 2.5vw, 2.5rem);
+  align-content: center;
+}
+.inv-row--multi {
+  grid-template-columns: repeat(2, 1fr);
+}
+.inv-row--single {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+.inv-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 26px;
+  padding: clamp(1.5rem, 3vw, 2.8rem);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.4s ease;
+}
+.inv-card--offline {
+  opacity: 0.55;
+}
+.inv-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: clamp(1rem, 2vh, 1.8rem);
+}
+.inv-card__name {
+  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+  font-weight: 700;
+}
+.inv-card__model {
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  color: var(--text-dim);
+}
+.status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  margin-top: 8px;
+}
+.status-dot--on {
+  background: var(--green);
+  box-shadow: 0 0 14px var(--green);
+}
+.status-dot--off {
+  background: var(--red);
+  box-shadow: 0 0 14px var(--red);
+}
+
+.inv-card__power {
+  text-align: center;
+  margin-bottom: clamp(1rem, 2vh, 1.8rem);
+}
+.inv-card__power-label {
+  font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.inv-card__power-value {
+  font-size: clamp(3.2rem, 9vw, 7rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--accent);
+  text-shadow: 0 0 40px rgba(255, 179, 0, 0.3);
+}
+.inv-card__power-unit {
+  font-size: 0.35em;
+  color: var(--text);
+  margin-left: 0.3rem;
+  font-weight: 600;
+}
+
+.inv-card__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+.inv-metric {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.inv-metric__label {
+  font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+  color: var(--text-dim);
+}
+.inv-metric__value {
+  font-size: clamp(1.3rem, 2.6vw, 2.1rem);
+  font-weight: 700;
+}
+.inv-metric__unit {
+  font-size: 0.55em;
+  color: var(--text-dim);
+  margin-left: 0.3rem;
+}
+
+/* ---------- Sidfot ---------- */
+.app__footer {
+  height: clamp(48px, 7vh, 84px);
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(2rem, 4vw, 4.5rem);
+  gap: 1.5rem;
+}
+.dots {
+  display: flex;
+  gap: 0.7rem;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: all 0.4s ease;
+}
+.dot--active {
+  background: var(--accent);
+  width: 34px;
+  border-radius: 6px;
+}
+.stale-badge {
+  font-size: 0.95rem;
+  color: var(--accent);
+  opacity: 0.8;
+}
+.clock {
+  margin-left: auto;
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=PV Monitor frontend (Vite preview server)
+After=network.target
+
+[Service]
+Type=simple
+User=kiosk
+WorkingDirectory=/opt/pvmonitor/frontend
+ExecStart=/usr/bin/npm run preview
+Restart=always
+RestartSec=3
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target

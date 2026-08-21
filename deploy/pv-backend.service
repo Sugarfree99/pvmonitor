@@ -1,0 +1,20 @@
+[Unit]
+Description=PV Monitor backend (KOSTAL Modbus poller + JSON API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kiosk
+WorkingDirectory=/opt/pvmonitor/backend
+EnvironmentFile=/opt/pvmonitor/backend/.env
+# Skapa RAM-disk-katalog för SQLite innan start
+ExecStartPre=/bin/mkdir -p /dev/shm/pvmonitor
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+# Vid strömavbrott ska tjänsten alltid tillbaka
+StartLimitIntervalSec=0
+
+[Install]
+WantedBy=multi-user.target

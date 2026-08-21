@@ -1,0 +1,46 @@
+{
+  "_comment": "Konfiguration för de tre KOSTAL-omformarna. Fyll i rätt IP-adresser.",
+  "_modbus_note": "KOSTAL PIKO CI exponerar Modbus TCP (SunSpec). Standardport är 1502 och unit-ID 71. Verifiera register mot KOSTAL:s 'Modbus TCP interface' -dokument för CI-serien och justera vid behov i backend/src/modbus/registerProfiles.js.",
+  "co2FactorKgPerKwh": 0.4,
+  "sites": [
+    {
+      "id": "sos",
+      "name": "SOS",
+      "inverters": [
+        {
+          "id": "sos-1",
+          "name": "Omformare 1",
+          "model": "KOSTAL CI 30",
+          "host": "0.0.0.0",
+          "port": 1502,
+          "unitId": 71,
+          "profile": "kostal-ci"
+        },
+        {
+          "id": "sos-2",
+          "name": "Omformare 2",
+          "model": "KOSTAL CI 30",
+          "host": "0.0.0.0",
+          "port": 1502,
+          "unitId": 71,
+          "profile": "kostal-ci"
+        }
+      ]
+    },
+    {
+      "id": "rsyd",
+      "name": "RSYD",
+      "inverters": [
+        {
+          "id": "rsyd-1",
+          "name": "Omformare 1",
+          "model": "KOSTAL CI 100",
+          "host": "0.0.0.0",
+          "port": 1502,
+          "unitId": 71,
+          "profile": "kostal-ci"
+        }
+      ]
+    }
+  ]
+}
