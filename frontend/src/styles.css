@@ -1,15 +1,17 @@
 :root {
-  --bg-0: #0a0f1e;
-  --bg-1: #111a33;
-  --bg-card: rgba(255, 255, 255, 0.05);
-  --bg-card-border: rgba(255, 255, 255, 0.09);
-  --text: #eef2fb;
-  --text-dim: #93a0bd;
-  --accent: #ffb300;
-  --green: #34d399;
+  /* Tema anpassat efter Räddningstjänsten Syd: varm, mörk bakgrund + brandröd accent */
+  --bg-0: #120a0b;
+  --bg-1: #1e1012;
+  --bg-card: rgba(255, 255, 255, 0.055);
+  --bg-card-border: rgba(255, 255, 255, 0.1);
+  --text: #f7efef;
+  --text-dim: #c2a6a7;
+  --accent: #e1231a;
+  --accent-2: #ff6a4d;
+  --green: #45c07a;
   --green-dim: #0f5132;
-  --red: #f87171;
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --red: #ff5a4d;
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -28,7 +30,7 @@ body,
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background: radial-gradient(1200px 800px at 70% -10%, #1b2c55 0%, var(--bg-0) 55%),
+  background: radial-gradient(1200px 800px at 70% -10%, #4a1416 0%, var(--bg-0) 55%),
     var(--bg-0);
   overflow: hidden;
   cursor: none;
@@ -176,7 +178,7 @@ body {
   font-weight: 800;
   line-height: 1;
   color: var(--accent);
-  text-shadow: 0 0 60px rgba(255, 179, 0, 0.35);
+  text-shadow: 0 0 60px rgba(225, 35, 26, 0.45);
 }
 .hero__unit {
   font-size: 0.35em;
@@ -301,7 +303,7 @@ body {
   font-weight: 800;
   line-height: 1.05;
   color: var(--accent);
-  text-shadow: 0 0 40px rgba(255, 179, 0, 0.3);
+  text-shadow: 0 0 40px rgba(225, 35, 26, 0.4);
 }
 .inv-card__power-unit {
   font-size: 0.35em;
