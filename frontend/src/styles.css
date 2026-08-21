@@ -347,6 +347,22 @@ body {
   padding: 0 clamp(2rem, 4vw, 4.5rem);
   gap: 1.5rem;
 }
+.reseller {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.reseller__label {
+  font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+.reseller__logo {
+  height: clamp(18px, 2.6vh, 26px);
+  width: auto;
+  opacity: 0.92;
+}
 .dots {
   display: flex;
   gap: 0.7rem;

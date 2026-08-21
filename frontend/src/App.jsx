@@ -104,6 +104,17 @@ export default function App() {
       </div>
 
       <footer className="app__footer">
+        <div className="reseller">
+          <span className="reseller__label">Förmedlas av</span>
+          <img
+            src="/bbk-logo.svg"
+            alt="BBK Group"
+            className="reseller__logo"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        </div>
         <div className="dots">
           {views.map((_, i) => (
             <span
