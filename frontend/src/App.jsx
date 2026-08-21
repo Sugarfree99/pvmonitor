@@ -15,7 +15,16 @@ function Clock() {
   }, []);
   return (
     <div className="clock">
-      {now.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+      <span className="clock__date">
+        {now.toLocaleDateString("sv-SE", {
+          weekday: "short",
+          day: "numeric",
+          month: "short"
+        })}
+      </span>
+      <span className="clock__time">
+        {now.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
+      </span>
     </div>
   );
 }

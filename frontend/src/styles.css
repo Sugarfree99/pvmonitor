@@ -516,8 +516,19 @@ body {
 }
 .clock {
   margin-left: auto;
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
   font-weight: 600;
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+}
+.clock__date {
+  font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+  text-transform: capitalize;
+  opacity: 0.85;
+}
+.clock__time {
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  color: var(--text);
 }
