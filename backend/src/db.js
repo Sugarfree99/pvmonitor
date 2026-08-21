@@ -1,9 +1,23 @@
 import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, existsSync, copyFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { config } from "./config.js";
 
 mkdirSync(dirname(config.dbPath), { recursive: true });
+
+// Återställ RAM-databasen från disk-backup vid uppstart (efter omstart/strömavbrott),
+// så att produktionshistoriken överlever. Görs bara om RAM-kopian saknas.
+if (config.dbBackupPath) {
+  mkdirSync(dirname(config.dbBackupPath), { recursive: true });
+  if (!existsSync(config.dbPath) && existsSync(config.dbBackupPath)) {
+    try {
+      copyFileSync(config.dbBackupPath, config.dbPath);
+      console.log("[db] återställde databasen från disk-backup");
+    } catch (err) {
+      console.warn(`[db] kunde inte återställa backup: ${err.message}`);
+    }
+  }
+}
 
 const db = new Database(config.dbPath);
 db.pragma("journal_mode = WAL");

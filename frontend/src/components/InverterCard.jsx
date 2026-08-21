@@ -44,7 +44,7 @@ export default function InverterCard({ inverter, co2Factor = 0.4 }) {
         </div>
       </div>
 
-      <CapacityBar powerW={inverter.powerW} capacityW={inverter.capacityW} />
+      <CapacityBar powerW={inverter.powerW} capacityW={inverter.capacityW} variant="compact" />
 
       <div className="inv-card__metrics">
         <Metric label="Idag" formatted={formatEnergyKwh(inverter.energyTodayWh)} />

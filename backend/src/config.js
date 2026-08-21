@@ -21,6 +21,8 @@ export const config = {
   pollIntervalMs: Number(process.env.POLL_INTERVAL_MS ?? 10_000),
   // Sökväg till SQLite-databasen. På Beelink pekas denna mot en RAM-disk.
   dbPath: process.env.DB_PATH ?? join(__dirname, "..", "data", "pvmonitor.sqlite"),
+  // Beständig disk-backup av RAM-databasen (återläses vid uppstart).
+  dbBackupPath: process.env.DB_BACKUP_PATH ?? null,
   // Mock-läge genererar syntetisk data utan fysiska omformare.
   mock: process.env.MOCK === "1" || process.env.MOCK === "true",
   co2FactorKgPerKwh: Number(raw.co2FactorKgPerKwh ?? 0.4),

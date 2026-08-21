@@ -347,20 +347,22 @@ body {
   margin-top: 0.9rem;
   width: 100%;
 }
-.capbar__top {
+.capbar__head {
   display: flex;
   align-items: baseline;
-  gap: 0.6rem;
-  margin-bottom: 0.4rem;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+.capbar__title {
+  font-size: clamp(0.85rem, 1.5vw, 1.2rem);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 .capbar__pct {
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
   font-weight: 800;
   color: var(--accent);
-}
-.capbar__cap {
-  font-size: clamp(0.8rem, 1.4vw, 1.1rem);
-  color: var(--text-dim);
 }
 .capbar__track {
   height: clamp(12px, 1.8vh, 20px);
@@ -374,6 +376,32 @@ body {
   background: linear-gradient(90deg, #ffd54a, var(--accent));
   box-shadow: 0 0 18px rgba(255, 179, 0, 0.4);
   transition: width 0.8s ease;
+}
+.capbar__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: clamp(0.75rem, 1.3vw, 1.05rem);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+/* Kompakt variant på omformarkorten */
+.capbar--compact {
+  margin-top: 1.1rem;
+}
+.capbar--compact .capbar__track {
+  height: clamp(8px, 1.2vh, 12px);
+}
+.capbar__caplabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  font-size: clamp(0.8rem, 1.4vw, 1.05rem);
+  color: var(--text-dim);
+}
+.capbar__capmax {
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* ---------- Produktionsdiagram ---------- */
