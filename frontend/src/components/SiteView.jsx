@@ -5,7 +5,7 @@ import { formatPower, formatEnergyKwh } from "../lib/format.js";
 
 // Vy 2 & 3: En anläggning (SOS eller RSYD) med dess omformare sida vid sida
 // plus en sammanställd rad för hela anläggningen.
-export default function SiteView({ site, co2Factor }) {
+export default function SiteView({ site, co2Factor, stale = false }) {
   const power = formatPower(site.powerW);
   const today = formatEnergyKwh(site.energyTodayWh);
   const count = site.inverters.length;
@@ -28,7 +28,12 @@ export default function SiteView({ site, co2Factor }) {
 
       <div className={`inv-row inv-row--${count > 1 ? "multi" : "single"}`}>
         {site.inverters.map((inv) => (
-          <InverterCard key={inv.id} inverter={inv} co2Factor={co2Factor} />
+          <InverterCard
+            key={inv.id}
+            inverter={inv}
+            co2Factor={co2Factor}
+            stale={stale}
+          />
         ))}
       </div>
     </section>

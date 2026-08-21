@@ -20,19 +20,21 @@ function Metric({ label, formatted }) {
 }
 
 // Ett kort per omformare med dess individuella mätvärden.
-export default function InverterCard({ inverter, co2Factor = 0.4 }) {
+export default function InverterCard({ inverter, co2Factor = 0.4, stale = false }) {
   const power = formatPower(inverter.powerW);
+  // Vid tappad serverkontakt är datan inaktuell → visa som offline (röd).
+  const online = inverter.online && !stale;
 
   return (
-    <div className={`inv-card${inverter.online ? "" : " inv-card--offline"}`}>
+    <div className={`inv-card${online ? "" : " inv-card--offline"}`}>
       <div className="inv-card__head">
         <div>
           <div className="inv-card__name">{inverter.name}</div>
           <div className="inv-card__model">{inverter.model}</div>
         </div>
         <span
-          className={`status-dot${inverter.online ? " status-dot--on" : " status-dot--off"}`}
-          title={inverter.online ? "Online" : "Offline"}
+          className={`status-dot${online ? " status-dot--on" : " status-dot--off"}`}
+          title={online ? "Online" : stale ? "Ingen aktuell data" : "Offline"}
         />
       </div>
 

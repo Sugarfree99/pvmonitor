@@ -68,6 +68,8 @@ export default function App() {
   const history = useHistory(60000);
   const [index, setIndex] = useState(0);
   const status = useStatus(data, error, lastUpdated);
+  // Ingen aktuell kontakt med servern → data är inaktuell (visa som offline).
+  const stale = status?.level === "error";
 
   // Bygg listan med vyer: översikt, produktion idag, en vy per anläggning.
   const views = [];
@@ -78,7 +80,12 @@ export default function App() {
     );
     for (const site of data.sites) {
       views.push(
-        <SiteView key={site.id} site={site} co2Factor={data.co2FactorKgPerKwh} />
+        <SiteView
+          key={site.id}
+          site={site}
+          co2Factor={data.co2FactorKgPerKwh}
+          stale={stale}
+        />
       );
     }
   }
