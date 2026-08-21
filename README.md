@@ -6,7 +6,7 @@ Autonom informationsskärm som visar realtidsstatistik från tre lokala KOSTAL-o
 - **RSYD-anläggningen:** 1 × KOSTAL CI 100
 
 Systemet kör på en Beelink Mini S (Debian Stable) i kiosk-läge och är byggt för att
-starta helt autonomt efter strömavbrott utan handpåläggning.
+starta autonomt efter strömavbrott utan handpåläggning.
 
 ## Arkitektur
 
@@ -57,8 +57,7 @@ npm run dev            # startar SPA på http://localhost:5173
 
 Innan de fysiska omformarna är tillgängliga körs en inbyggd **KOSTAL Modbus
 TCP-simulator** som emulerar alla tre omformarna lokalt. Backenden pollar
-simulatorn via **exakt samma Modbus-kod** som mot riktig hårdvara – enda
-skillnaden är vilken config (IP-adresser) som används.
+simulatorn via samma Modbus-kod som mot riktig hårdvara. Skillnaden är vilken config (IP-adresser) som används.
 
 ```bash
 cd backend
