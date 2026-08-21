@@ -19,7 +19,7 @@ Döp datorn till `pv-display`.
 
 ```bash
 sudo apt update && sudo apt install -y \
-  xorg openbox chromium lightdm unclutter git nodejs npm curl
+  xorg openbox firefox-esr lightdm unclutter git nodejs npm curl
 ```
 
 ## 4. Hämta och installera PV Monitor
@@ -35,7 +35,7 @@ Skriptet:
 - skapar `kiosk`-användaren,
 - installerar backend- och frontend-beroenden och bygger frontenden,
 - installerar och startar systemd-tjänsterna `pv-backend` och `pv-frontend`,
-- konfigurerar LightDM autologin, Openbox autostart och Chromium kiosk,
+- konfigurerar LightDM autologin, Openbox autostart och Firefox kiosk,
 - aktiverar hårdvaru-watchdog och volatil journald-loggning.
 
 ## 5. Konfigurera omformarna
@@ -63,7 +63,7 @@ sudo reboot
 ```
 
 Efter omstart loggar `kiosk` in automatiskt, Openbox startar, väntar på API:et och
-öppnar Chromium i fullskärm mot `http://localhost:5173`.
+öppnar Firefox i fullskärm mot `http://localhost:5173`.
 
 ## Felsökning
 

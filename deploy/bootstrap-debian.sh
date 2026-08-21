@@ -6,7 +6,7 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get install -y sudo xorg openbox chromium lightdm unclutter git nodejs npm curl ca-certificates
+apt-get install -y sudo xorg openbox firefox-esr lightdm unclutter git nodejs npm curl ca-certificates
 
 # Lägg smartsource i sudo-gruppen och ge lösenordsfri sudo under driftsättningen.
 id smartsource >/dev/null 2>&1 && usermod -aG sudo smartsource || true
