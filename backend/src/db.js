@@ -61,6 +61,12 @@ export function getAllLatest() {
   return selectAllStmt.all();
 }
 
+const selectByIdStmt = db.prepare(`SELECT * FROM latest WHERE inverter_id = ?`);
+
+export function getLatestById(id) {
+  return selectByIdStmt.get(id);
+}
+
 // Backar RAM-databasen till beständig disk (anropas periodiskt av backuparen).
 export function backupTo(targetPath) {
   return db.backup(targetPath);

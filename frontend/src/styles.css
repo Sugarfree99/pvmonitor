@@ -41,6 +41,42 @@ body {
   flex-direction: column;
 }
 
+/* ---------- Statusbanner (syns bara vid problem) ---------- */
+.top-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem clamp(1.5rem, 3vw, 3rem);
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+  color: #1a1205;
+  animation: fade 500ms ease;
+  z-index: 10;
+}
+.top-banner--warn {
+  background: linear-gradient(90deg, #ffb300, #ff9800);
+}
+.top-banner--error {
+  background: linear-gradient(90deg, #f87171, #ef4444);
+  color: #fff;
+}
+.top-banner__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
 /* ---------- Laddning ---------- */
 .app--loading {
   align-items: center;
@@ -329,6 +365,14 @@ body {
   font-size: 0.95rem;
   color: var(--accent);
   opacity: 0.8;
+}
+.updated {
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.updated--stale {
+  color: var(--accent);
 }
 .clock {
   margin-left: auto;

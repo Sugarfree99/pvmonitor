@@ -42,22 +42,31 @@ export function buildSnapshot() {
       energyYearWh: sum(inverters, "energyYearWh"),
       energyTotalWh,
       co2SavedKg: co2Kg(energyTotalWh),
+      invertersOnline: inverters.filter((i) => i.online).length,
+      invertersTotal: inverters.length,
       inverters
     };
   });
 
   const energyTotalWh = sum(sites, "energyTotalWh");
+  const invertersOnline = sum(sites, "invertersOnline");
+  const invertersTotal = sum(sites, "invertersTotal");
   const totals = {
     powerW: sum(sites, "powerW"),
     energyTodayWh: sum(sites, "energyTodayWh"),
     energyYearWh: sum(sites, "energyYearWh"),
     energyTotalWh,
-    co2SavedKg: co2Kg(energyTotalWh)
+    co2SavedKg: co2Kg(energyTotalWh),
+    invertersOnline,
+    invertersTotal
   };
 
   return {
     updatedAt: new Date().toISOString(),
     co2FactorKgPerKwh: config.co2FactorKgPerKwh,
+    invertersOnline,
+    invertersTotal,
+    allOnline: invertersOnline === invertersTotal,
     totals,
     sites
   };

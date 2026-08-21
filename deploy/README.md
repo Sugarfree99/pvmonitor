@@ -74,6 +74,62 @@ Efter omstart loggar `kiosk` in automatiskt, Openbox startar, väntar på API:et
 | Ingen data / offline-prickar | Verifiera Modbus-register i `docs/MODBUS.md` |
 | Testa utan omformare | Sätt `MOCK=1` i `backend/.env` och `systemctl restart pv-backend` |
 
+## Så syns fel på skärmen (för betraktaren)
+
+Gränssnittet döljer aldrig ett fel – det visar det tydligt utan att störa helheten:
+
+- **Röd/gul prick** på en omformare i SOS-/RSYD-vyn = den omformaren svarar inte.
+  Kortet tonas också ned.
+- **Gul banner högst upp:** ”*N av M omformare offline*” = backenden når inte
+  Modbus på en eller flera omformare. Effekten visas som 0 kW men energisummorna
+  (idag/år/totalt) behålls från senast kända värde.
+- **Röd banner högst upp:** ”*Ingen kontakt med servern*” = skärmen når inte
+  backenden alls (visar senast kända värden + tidsstämpel).
+- **Sidfoten** visar alltid **”Uppdaterad HH:MM:SS”**. Står klockslaget stilla vet
+  du direkt att datan är gammal.
+
+## Läsa loggarna (för administratören)
+
+All loggning går via **systemd/journald**. Vanliga kommandon:
+
+```bash
+# Live-logg för backenden (Modbus-pollern) – visar t.ex.
+#   [poller] sos-1 kunde inte läsas: connect ECONNREFUSED <ip>:1502
+sudo journalctl -u pv-backend -f
+
+# Live-logg för frontenden (Vite preview-servern)
+sudo journalctl -u pv-frontend -f
+
+# Senaste 200 raderna, eller sedan ett visst klockslag
+sudo journalctl -u pv-backend -n 200 --no-pager
+sudo journalctl -u pv-backend --since "today"
+sudo journalctl -u pv-backend --since "2026-08-21 08:00"
+
+# Bara fel/varningar
+sudo journalctl -u pv-backend -p warning
+
+# Status (kör tjänsten? senaste rader? senaste omstart?)
+systemctl status pv-backend pv-frontend
+```
+
+> Obs: journald är satt till `Storage=volatile` (skrivs i RAM för att skona disken),
+> så loggarna **nollställs vid omstart**. Använd `-f` medan felet pågår.
+
+Snabb hälsokoll direkt mot API:et (visar vad skärmen ser):
+
+```bash
+curl -s http://localhost:3000/api/health            # {"status":"ok",...}
+curl -s http://localhost:3000/api/data | less        # invertersOnline / invertersTotal per omformare
+```
+
+Testa en enskild omformare på Modbus-nivå (se även `../docs/MODBUS.md`):
+
+```bash
+sudo apt install -y mbpoll
+mbpoll -t 4:float -r 173 -a 71 -p 1502 <omformarens-ip>
+```
+
+
 ## Fjärrstyrning
 
 Installera Tailscale för utgående VPN-tunnel så att du kan SSH:a hemifrån:

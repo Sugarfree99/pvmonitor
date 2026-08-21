@@ -18,9 +18,44 @@ function Clock() {
   );
 }
 
+// Räknar ut synligt status-meddelande utifrån serverns nåbarhet och omformarnas
+// online-status. Returnerar null när allt är normalt (ingen banner visas).
+function useStatus(data, error, lastUpdated) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const ageSec = lastUpdated ? Math.floor((now - lastUpdated) / 1000) : null;
+  const lastTime = lastUpdated
+    ? new Date(lastUpdated).toLocaleTimeString("sv-SE")
+    : null;
+
+  // Ingen kontakt med servern på en stund → visa tydlig varning.
+  if (error && ageSec !== null && ageSec > 20) {
+    return {
+      level: "error",
+      text: `Ingen kontakt med servern – visar senast kända värden (uppdaterades ${lastTime})`
+    };
+  }
+
+  // Någon omformare svarar inte på Modbus.
+  if (data && data.invertersOnline < data.invertersTotal) {
+    const offline = data.invertersTotal - data.invertersOnline;
+    return {
+      level: "warn",
+      text: `${offline} av ${data.invertersTotal} omformare offline – kontrollera nätverk/omformare`
+    };
+  }
+
+  return null;
+}
+
 export default function App() {
-  const { data, error } = useData(5000);
+  const { data, error, lastUpdated } = useData(5000);
   const [index, setIndex] = useState(0);
+  const status = useStatus(data, error, lastUpdated);
 
   // Bygg listan med vyer: översikt + en vy per anläggning.
   const views = [];
@@ -55,6 +90,13 @@ export default function App() {
 
   return (
     <div className="app">
+      {status && (
+        <div className={`top-banner top-banner--${status.level}`}>
+          <span className="top-banner__dot" />
+          {status.text}
+        </div>
+      )}
+
       <div className="stage">
         <div key={safeIndex} className="stage__view fade-in">
           {views[safeIndex]}
@@ -70,7 +112,12 @@ export default function App() {
             />
           ))}
         </div>
-        {error && <div className="stale-badge">Uppdaterar…</div>}
+        {lastUpdated && (
+          <div className={`updated${error ? " updated--stale" : ""}`}>
+            {error ? "Uppdaterar…" : "Uppdaterad"}{" "}
+            {new Date(lastUpdated).toLocaleTimeString("sv-SE")}
+          </div>
+        )}
         <Clock />
       </footer>
     </div>

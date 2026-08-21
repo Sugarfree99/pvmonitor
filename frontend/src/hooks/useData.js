@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 export function useData(intervalMs = 5000) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const lastGood = useRef(null);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export function useData(intervalMs = 5000) {
         if (!active) return;
         lastGood.current = json;
         setData(json);
+        setLastUpdated(Date.now());
         setError(false);
       } catch {
         if (!active) return;
@@ -34,5 +36,5 @@ export function useData(intervalMs = 5000) {
     };
   }, [intervalMs]);
 
-  return { data, error };
+  return { data, error, lastUpdated };
 }
