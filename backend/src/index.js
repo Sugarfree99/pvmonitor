@@ -4,9 +4,13 @@ import { config } from "./config.js";
 import { startPoller, stopPoller } from "./poller.js";
 import { buildSnapshot, buildHistory } from "./aggregate.js";
 import { backupTo } from "./db.js";
+import { adminRouter } from "./admin.js";
 
 const app = express();
 app.use(cors());
+
+// Admin-gränssnitt (lösenordsskyddat) för att redigera omformare.
+app.use("/admin", adminRouter);
 
 // Enkel hälsokontroll som kiosk-skriptet väntar på innan Chromium startar.
 app.get("/api/health", (_req, res) => {

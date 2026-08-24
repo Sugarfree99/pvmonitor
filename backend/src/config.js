@@ -12,7 +12,13 @@ function resolveConfigPath() {
   return join(__dirname, "..", "config", "inverters.json");
 }
 
-const raw = JSON.parse(readFileSync(resolveConfigPath(), "utf-8"));
+const configPath = resolveConfigPath();
+
+function loadRaw() {
+  return JSON.parse(readFileSync(configPath, "utf-8"));
+}
+
+const raw = loadRaw();
 
 export const config = {
   port: Number(process.env.PORT ?? 3000),
@@ -25,12 +31,26 @@ export const config = {
   dbBackupPath: process.env.DB_BACKUP_PATH ?? null,
   // Mock-läge genererar syntetisk data utan fysiska omformare.
   mock: process.env.MOCK === "1" || process.env.MOCK === "true",
+  // Aktiv konfigurationsfil (redigeras av admin-gränssnittet).
+  configPath,
   co2FactorKgPerKwh: Number(raw.co2FactorKgPerKwh ?? 0.4),
   sites: raw.sites ?? []
 };
 
+// Läser om omformarkonfigurationen från fil (efter att admin sparat) och
+// uppdaterar det delade config-objektet så pollern/aggregeringen tar nya värden.
+export function reloadConfig() {
+  const r = loadRaw();
+  config.co2FactorKgPerKwh = Number(r.co2FactorKgPerKwh ?? 0.4);
+  config.sites = r.sites ?? [];
+  return config;
+}
+
+// Alla aktiverade omformare (avaktiverade hoppas över helt).
 export function allInverters() {
   return config.sites.flatMap((site) =>
-    site.inverters.map((inv) => ({ ...inv, siteId: site.id, siteName: site.name }))
+    (site.inverters ?? [])
+      .filter((inv) => inv.enabled !== false)
+      .map((inv) => ({ ...inv, siteId: site.id, siteName: site.name }))
   );
 }

@@ -1,5 +1,4 @@
 {
-  "_comment": "SIMULERINGSKONFIGURATION. Används INTE i produktion. Pekar backenden mot den lokala KOSTAL-simulatorn (sim/kostalSimulator.js) i stället för fysiska omformare. Vid driftsättning: använd config/inverters.json med riktiga IP-adresser i stället.",
   "co2FactorKgPerKwh": 0.4,
   "sites": [
     {
@@ -13,7 +12,8 @@
           "host": "127.0.0.1",
           "port": 1502,
           "unitId": 71,
-          "profile": "kostal-ci"
+          "profile": "kostal-ci",
+          "enabled": true
         },
         {
           "id": "sos-2",
@@ -22,7 +22,8 @@
           "host": "127.0.0.1",
           "port": 1503,
           "unitId": 71,
-          "profile": "kostal-ci"
+          "profile": "kostal-ci",
+          "enabled": true
         }
       ]
     },
@@ -37,7 +38,8 @@
           "host": "127.0.0.1",
           "port": 1504,
           "unitId": 71,
-          "profile": "kostal-ci"
+          "profile": "kostal-ci",
+          "enabled": true
         }
       ]
     }
