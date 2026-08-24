@@ -533,7 +533,7 @@ async function savePasswords(){
     if(!r.ok){const d=await r.json();m.className='msg err';m.textContent='Fel: '+(d.error||r.status);return}
   }
   $('pw_admin').value='';$('pw_super').value='';
-  m.className='msg ok';m.textContent='Lösenord uppdaterat.';
+  m.className='msg ok';m.textContent='Lösenord uppdaterat';
 }
 init();
 </script></body></html>`;
