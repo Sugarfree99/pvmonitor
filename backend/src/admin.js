@@ -412,7 +412,7 @@ function render(){
         <input value="\${esc(s.name)}" \${sup?'':'disabled'} oninput="updSite(\${si},'name',this.value)">
         \${sup?\`<button class="b-del" onclick="delSite(\${si})">Ta bort anläggning</button>\`:''}
       </div>
-      <table><thead><tr><th>Namn</th><th>Modell</th><th>IP-adress</th><th>Port</th><th>Unit-ID</th><th>Kapacitet kW</th><th>I drift</th><th></th></tr></thead>
+      <table><thead><tr><th>Namn</th><th>Modell</th><th>IP-adress</th><th>Port</th><th title="Modbus enhets-adress. På Modbus TCP identifieras varje omformare av sin egen IP-adress, så alla kan ha samma unit-ID (KOSTAL standard: 71). Unit-ID skiljer bara enheter åt när flera omformare sitter bakom en gemensam Modbus-gateway på samma IP.">Unit-ID&nbsp;&#9432;</th><th>Kapacitet kW</th><th>I drift</th><th></th></tr></thead>
       <tbody>\${rows}</tbody></table>
       <div style="margin-top:.8rem"><button class="b-add" onclick="addInv(\${si})">+ Lägg till omformare</button></div>\`;
     c.appendChild(div);
