@@ -342,6 +342,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
         <div class="fld"><label>Var N:e timme (0 = daglig)</label><input id="bk_int" class="num" type="number" min="0"></div>
         <div class="fld"><label>Tid (daglig)</label><input id="bk_time" class="num" type="time"></div>
         <div class="fld"><label>Behåll antal kopior</label><input id="bk_keep" class="num" type="number" min="1"></div>
+        <div class="fld"><label>Komprimering</label><select id="bk_comp"><option value="gzip">Gzip (.gz)</option><option value="brotli">Brotli (.br – bäst)</option><option value="none">Ingen (.sqlite)</option></select></div>
       </div>
       <div class="fld" style="margin-bottom:1rem"><label>Målplats (mapp eller user@server:/sökväg)</label><input id="bk_dest" placeholder="/mnt/nas/pvbackup   eller   backup@nas:/pv"></div>
       <div class="bar" style="position:static;padding:0">
@@ -437,11 +438,11 @@ async function save(){
 }
 async function loadBackup(){
   const b=await (await fetch('api/backup')).json();
-  $('bk_en').checked=!!b.enabled; $('bk_int').value=b.intervalHours; $('bk_time').value=b.time; $('bk_keep').value=b.keep; $('bk_dest').value=b.destination||'';
+  $('bk_en').checked=!!b.enabled; $('bk_int').value=b.intervalHours; $('bk_time').value=b.time; $('bk_keep').value=b.keep; $('bk_dest').value=b.destination||''; $('bk_comp').value=b.compression||'gzip';
   $('bk_status').textContent=b.lastRun?('Senaste körning: '+new Date(b.lastRun).toLocaleString('sv-SE')+' – '+(b.lastStatus||'')):'Ingen körning ännu.';
 }
-function bkBody(){return {enabled:$('bk_en').checked,intervalHours:Number($('bk_int').value)||0,time:$('bk_time').value||'03:00',keep:Number($('bk_keep').value)||14,destination:$('bk_dest').value.trim()}}
+function bkBody(){return {enabled:$('bk_en').checked,intervalHours:Number($('bk_int').value)||0,time:$('bk_time').value||'03:00',keep:Number($('bk_keep').value)||14,destination:$('bk_dest').value.trim(),compression:$('bk_comp').value}}
 async function saveBackup(){const m=$('bk_msg');m.className='';m.textContent='Sparar…';const r=await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});if(r.ok){m.className='msg ok';m.textContent='Sparat.';loadBackup()}else{const d=await r.json();m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
-async function runBackup(){const m=$('bk_msg');m.className='';m.textContent='Kör…';await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});const r=await fetch('api/backup/run',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const d=await r.json();if(r.ok){m.className='msg ok';m.textContent='Backup klar.';loadBackup()}else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
+async function runBackup(){const m=$('bk_msg');m.className='';m.textContent='Kör…';await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});const r=await fetch('api/backup/run',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const d=await r.json();if(r.ok){m.className='msg ok';m.textContent='Backup klar';loadBackup()}else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
 init();
 </script></body></html>`;

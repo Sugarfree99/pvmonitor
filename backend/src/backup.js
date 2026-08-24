@@ -6,11 +6,13 @@ import {
   mkdirSync,
   readdirSync,
   statSync,
-  unlinkSync
+  unlinkSync,
+  copyFileSync
 } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { gzipSync, brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import os from "node:os";
 import { backupTo } from "./db.js";
 
@@ -23,6 +25,7 @@ const defaults = {
   time: "03:00",
   destination: "", // mapp (lokal/monterad) eller user@host:/sökväg
   keep: 14,
+  compression: "gzip", // "gzip" | "brotli" | "none"
   lastRun: null,
   lastStatus: null
 };
@@ -42,13 +45,17 @@ function save(s) {
 
 export function updateBackupSettings(patch) {
   const s = getBackupSettings();
+  const comp = ["gzip", "brotli", "none"].includes(patch.compression)
+    ? patch.compression
+    : s.compression || "gzip";
   const next = {
     ...s,
     enabled: !!patch.enabled,
     intervalHours: Math.max(0, Number(patch.intervalHours) || 0),
     time: /^\d{2}:\d{2}$/.test(patch.time || "") ? patch.time : s.time,
     destination: String(patch.destination || "").trim(),
-    keep: Math.max(1, Number(patch.keep) || 14)
+    keep: Math.max(1, Number(patch.keep) || 14),
+    compression: comp
   };
   save(next);
   return next;
@@ -63,25 +70,58 @@ function isRemote(dest) {
   return /@.+:/.test(dest);
 }
 
-// Skapar en konsistent kopia (via SQLite online-backup) och lägger den på målplatsen.
+function compExt(comp) {
+  return comp === "brotli" ? ".br" : comp === "gzip" ? ".gz" : "";
+}
+
+function compressFile(src, dest, comp) {
+  const data = readFileSync(src);
+  const out =
+    comp === "brotli"
+      ? brotliCompressSync(data, {
+          params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 }
+        })
+      : gzipSync(data, { level: 9 });
+  writeFileSync(dest, out);
+}
+
+// Skapar en konsistent kopia (via SQLite online-backup), komprimerar och lägger
+// den på målplatsen.
 export async function runBackupNow() {
   const s = getBackupSettings();
   if (!s.destination) throw new Error("Ingen målplats angiven");
-  const name = `pvmonitor-${stamp()}.sqlite`;
+  const comp = s.compression || "gzip";
+  const base = `pvmonitor-${stamp()}.sqlite`;
+  const finalName = base + compExt(comp);
 
-  if (isRemote(s.destination)) {
-    const tmp = join(os.tmpdir(), name);
-    await backupTo(tmp);
-    await scp(tmp, `${s.destination.replace(/\/+$/, "")}/${name}`);
+  const tmpRaw = join(os.tmpdir(), base);
+  await backupTo(tmpRaw);
+  let tmpFinal = tmpRaw;
+  if (compExt(comp)) {
+    tmpFinal = join(os.tmpdir(), finalName);
+    compressFile(tmpRaw, tmpFinal, comp);
     try {
-      unlinkSync(tmp);
+      unlinkSync(tmpRaw);
     } catch {
       /* ignore */
     }
-  } else {
-    mkdirSync(s.destination, { recursive: true });
-    await backupTo(join(s.destination, name));
-    pruneLocal(s.destination, s.keep);
+  }
+
+  try {
+    if (isRemote(s.destination)) {
+      await scp(tmpFinal, `${s.destination.replace(/\/+$/, "")}/${finalName}`);
+      await pruneRemote(s.destination, s.keep);
+    } else {
+      mkdirSync(s.destination, { recursive: true });
+      copyFileSync(tmpFinal, join(s.destination, finalName));
+      pruneLocal(s.destination, s.keep);
+    }
+  } finally {
+    try {
+      unlinkSync(tmpFinal);
+    } catch {
+      /* ignore */
+    }
   }
 
   const done = { ...s, lastRun: Date.now(), lastStatus: "ok" };
@@ -102,7 +142,7 @@ function scp(src, target) {
 function pruneLocal(dir, keep) {
   try {
     const files = readdirSync(dir)
-      .filter((f) => /^pvmonitor-\d{8}-\d{6}\.sqlite$/.test(f))
+      .filter((f) => /^pvmonitor-\d{8}-\d{6}\.sqlite(\.(gz|br))?$/.test(f))
       .map((f) => ({ f, t: statSync(join(dir, f)).mtimeMs }))
       .sort((a, b) => b.t - a.t);
     files.slice(keep).forEach((x) => {
@@ -115,6 +155,20 @@ function pruneLocal(dir, keep) {
   } catch {
     /* ignore */
   }
+}
+
+// Gallrar på en fjärrserver (scp-mål) via ssh, bäst-effort.
+function pruneRemote(destination, keep) {
+  const idx = destination.indexOf(":");
+  if (idx < 0) return Promise.resolve();
+  const host = destination.slice(0, idx);
+  const path = destination.slice(idx + 1).replace(/\/+$/, "") || ".";
+  const cmd = `cd '${path}' 2>/dev/null && ls -1t pvmonitor-*.sqlite* 2>/dev/null | tail -n +${keep + 1} | xargs -r rm -f`;
+  return new Promise((resolve) => {
+    const p = spawn("ssh", ["-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new", host, cmd]);
+    p.on("error", () => resolve());
+    p.on("close", () => resolve());
+  });
 }
 
 let timer = null;
