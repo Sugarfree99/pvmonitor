@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PV Monitor – Kundunderlag för godkännande</title>
+<style>
+  :root { --blue:#1e3a5f; --amber:#f5a623; --ink:#1b2430; --muted:#5b6b7b; --line:#e3e8ee; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    color: var(--ink); background: #f4f6f9; line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, var(--blue), #14263d);
+    color: #fff; padding: 40px 48px;
+  }
+  header h1 { margin: 0 0 6px; font-size: 30px; }
+  header p { margin: 0; color: #cdd8e6; font-size: 15px; }
+  .meta {
+    margin-top: 18px; display: flex; flex-wrap: wrap; gap: 24px;
+    font-size: 13px; color: #aebfd2;
+  }
+  .meta b { color: #fff; font-weight: 600; }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 24px 64px; }
+  .intro {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px 28px; margin-bottom: 32px;
+  }
+  .intro h2 { margin: 0 0 10px; font-size: 18px; }
+  .intro ul { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+  section.shot {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(20,40,70,.06);
+  }
+  .shot .head { padding: 18px 24px 4px; }
+  .kicker {
+    display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 4px;
+  }
+  .shot h3 { margin: 0 0 6px; font-size: 20px; }
+  .shot p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .frame {
+    background: #0c1622; padding: 14px; border-top: 1px solid var(--line);
+  }
+  .frame img {
+    display: block; width: 100%; height: auto; border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25);
+  }
+  .approve {
+    display: flex; align-items: center; gap: 12px; padding: 14px 24px;
+    border-top: 1px solid var(--line); font-size: 13px; color: var(--muted);
+  }
+  .box { width: 16px; height: 16px; border: 2px solid var(--muted); border-radius: 3px; }
+  footer {
+    max-width: 1120px; margin: 0 auto; padding: 24px; color: var(--muted); font-size: 13px;
+    border-top: 1px solid var(--line);
+  }
+  .sign { display: flex; gap: 40px; margin-top: 28px; flex-wrap: wrap; }
+  .sign div { flex: 1; min-width: 220px; }
+  .sign .line { border-bottom: 1px solid #97a6b6; height: 40px; margin-bottom: 6px; }
+  @media print {
+    body { background: #fff; }
+    section.shot, .intro { break-inside: avoid; box-shadow: none; }
+    header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>PV Monitor – solproduktionsövervakning</h1>
+  <p>Kundunderlag för godkännande av gränssnitt och funktion</p>
+  <div class="meta">
+    <span><b>Anläggningar:</b> SOS (2× KOSTAL CI 30) &amp; RSYD (1× KOSTAL CI 100)</span>
+    <span><b>Datum:</b> 2026-08-24</span>
+    <span><b>Version:</b> Förhandsgranskning (simulerade värden)</span>
+  </div>
+</header>
+
+<main>
+  <div class="intro">
+    <h2>Om detta underlag</h2>
+    <p>Nedan visas samtliga vyer som systemet erbjuder – både de <b>publika vyer</b>
+       som roterar automatiskt på storbildsskärmen och de <b>administrationsvyer</b>
+       som når via inloggning. Bilderna är tagna från en körande miljö med
+       simulerade mätvärden så att layout, färger och funktion kan granskas innan
+       de riktiga växelriktarna kopplas in.</p>
+    <ul>
+      <li>Publika vyerna byts automatiskt var 15:e sekund på skärmen.</li>
+      <li>Effekt visas i realtid; energisummor visas för idag, i år och totalt, samt minskad CO₂.</li>
+      <li>Fel (offline växelriktare eller tappad serverkontakt) visas tydligt med prickar och banner.</li>
+    </ul>
+  </div>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Publik vy 1 av 4</span>
+      <h3>Översikt</h3>
+      <p>Samlad realtidseffekt för hela anläggningen, andel av maxeffekt just nu,
+         samt energi idag / i år / totalt och minskad CO₂.</p>
+    </div>
+    <div class="frame"><img src="screenshots/view0-oversikt.png" alt="Översiktsvy"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Publik vy 2 av 4</span>
+      <h3>Produktion idag</h3>
+      <p>Stapeldiagram över produktionen per timme under dagen. Aktuell timme
+         markeras i grönt så att man ser var på dygnskurvan anläggningen befinner sig.</p>
+    </div>
+    <div class="frame"><img src="screenshots/view1-produktion.png" alt="Produktion idag"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Publik vy 3 av 4</span>
+      <h3>SOS-anläggningen</h3>
+      <p>De två växelriktarna (KOSTAL CI 30) sida vid sida med statuslampa,
+         aktuell effekt, andel av maxeffekt och energisummor per enhet.</p>
+    </div>
+    <div class="frame"><img src="screenshots/view2-sos.png" alt="SOS-anläggningen"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Publik vy 4 av 4</span>
+      <h3>RSYD-anläggningen</h3>
+      <p>Växelriktaren KOSTAL CI 100 med status, aktuell effekt, andel av
+         maxeffekt och energisummor.</p>
+    </div>
+    <div class="frame"><img src="screenshots/view3-rsyd.png" alt="RSYD-anläggningen"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Administration – inloggning</span>
+      <h3>Inloggningsvy</h3>
+      <p>Administrationen nås via inloggning. Två roller finns: <b>admin</b>
+         (redigera anläggningar/växelriktare) och <b>superadmin</b> (full behörighet).</p>
+    </div>
+    <div class="frame"><img src="screenshots/admin3-login.png" alt="Admin inloggning"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Administration – roll: Admin</span>
+      <h3>Adminvy (begränsad behörighet)</h3>
+      <p>Admin kan redigera namn, modell, IP, port och driftstatus på växelriktare.
+         CO₂-faktor är låst och sektionerna för att lägga till anläggningar, backup
+         och konton visas inte.</p>
+    </div>
+    <div class="frame"><img src="screenshots/admin4-admin-begransad.png" alt="Adminvy begränsad"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+
+  <section class="shot">
+    <div class="head">
+      <span class="kicker">Administration – roll: Superadmin</span>
+      <h3>Superadminvy (full behörighet)</h3>
+      <p>Superadmin kan dessutom ändra CO₂-faktor, lägga till/ta bort anläggningar,
+         konfigurera schemalagd <b>databasbackup</b> (med komprimering och "Kör backup nu")
+         samt byta inloggningslösenord under <b>Konton &amp; lösenord</b> (lagras hashat).</p>
+    </div>
+    <div class="frame"><img src="screenshots/admin5-superadmin.png" alt="Superadminvy"></div>
+    <div class="approve"><span class="box"></span> Godkänns av kund</div>
+  </section>
+</main>
+
+<footer>
+  <p><b>Notering:</b> Mätvärden i bilderna är simulerade. Vid driftsättning kopplas
+     de riktiga KOSTAL-växelriktarnas IP-adresser in och simulatorn stängs av.
+     Konfigfil-sökväg och lokala backup-sökvägar i adminvyerna hör till testmiljön.</p>
+  <div class="sign">
+    <div><div class="line"></div>Kundens underskrift / datum</div>
+    <div><div class="line"></div>Leverantörens underskrift / datum</div>
+  </div>
+</footer>
+</body>
+</html>
