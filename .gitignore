@@ -17,6 +17,9 @@ backend/data/
 .env
 backend/.env
 
+# Runtime-genererad backup-konfiguration (per miljö)
+backend/config/backup.json
+
 # Logs
 *.log
 npm-debug.log*

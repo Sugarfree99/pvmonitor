@@ -5,6 +5,7 @@ import { startPoller, stopPoller } from "./poller.js";
 import { buildSnapshot, buildHistory } from "./aggregate.js";
 import { backupTo } from "./db.js";
 import { adminRouter } from "./admin.js";
+import { startBackupScheduler } from "./backup.js";
 
 const app = express();
 app.use(cors());
@@ -31,6 +32,7 @@ app.get("/api/history", (req, res) => {
 const server = app.listen(config.port, config.host, () => {
   console.log(`[api] lyssnar på http://${config.host}:${config.port}`);
   startPoller();
+  startBackupScheduler();
 });
 
 // Backa RAM-databasen till beständig disk (skyddar mot dataförlust vid

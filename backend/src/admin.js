@@ -2,6 +2,7 @@ import express from "express";
 import { writeFileSync } from "node:fs";
 import crypto from "node:crypto";
 import { config, reloadConfig } from "./config.js";
+import { getBackupSettings, updateBackupSettings, runBackupNow } from "./backup.js";
 
 export const adminRouter = express.Router();
 
@@ -238,6 +239,35 @@ adminRouter.post("/api/config", requireAuth, express.json({ limit: "1mb" }), (re
   }
 });
 
+// Databasbackup-inställningar (endast superadmin).
+function requireSuper(req, res) {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return false;
+  }
+  return true;
+}
+
+adminRouter.get("/api/backup", requireAuth, (req, res) => {
+  if (!requireSuper(req, res)) return;
+  res.json(getBackupSettings());
+});
+
+adminRouter.post("/api/backup", requireAuth, express.json(), (req, res) => {
+  if (!requireSuper(req, res)) return;
+  res.json(updateBackupSettings(req.body));
+});
+
+adminRouter.post("/api/backup/run", requireAuth, express.json(), async (req, res) => {
+  if (!requireSuper(req, res)) return;
+  try {
+    const r = await runBackupNow();
+    res.json({ ok: true, ...r });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 adminRouter.get("/", (_req, res) => {
   res.type("html").send(ADMIN_HTML);
 });
@@ -302,6 +332,25 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   </div>
   <div id="sites"></div>
   <button id="addSiteBtn" class="b-add" onclick="addSite()">+ Lägg till anläggning</button>
+  <div id="backupSection" style="display:none;margin-top:2rem">
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Databasbackup (extern kopia)</h2>
+    <p class="hint">Schemalagd kopia till en målplats – säkrare än mejl. Målplats = lokal/monterad mapp eller <code>user@server:/sökväg</code> (scp, kräver SSH-nyckel).</p>
+    <div class="site">
+      <div class="top">
+        <div class="fld"><label>Aktiverad</label><input id="bk_en" type="checkbox"></div>
+        <div class="fld"><label>Var N:e timme (0 = daglig)</label><input id="bk_int" class="num" type="number" min="0"></div>
+        <div class="fld"><label>Tid (daglig)</label><input id="bk_time" class="num" type="time"></div>
+        <div class="fld"><label>Behåll antal kopior</label><input id="bk_keep" class="num" type="number" min="1"></div>
+      </div>
+      <div class="fld" style="margin-bottom:1rem"><label>Målplats (mapp eller user@server:/sökväg)</label><input id="bk_dest" placeholder="/mnt/nas/pvbackup   eller   backup@nas:/pv"></div>
+      <div class="bar" style="position:static;padding:0">
+        <button class="b-save" onclick="saveBackup()">Spara backup-inställningar</button>
+        <button class="b-add" onclick="runBackup()">Kör backup nu</button>
+        <span id="bk_msg"></span>
+      </div>
+      <p class="hint" id="bk_status"></p>
+    </div>
+  </div>
   <div class="bar">
     <button class="b-save" onclick="save()">Spara ändringar</button>
     <span id="msg"></span>
@@ -330,6 +379,8 @@ function startApp(){
   $('rolebadge').className='badge '+(sup?'super':'admin');
   $('co2').disabled=!sup;
   $('addSiteBtn').style.display=sup?'inline-block':'none';
+  $('backupSection').style.display=sup?'block':'none';
+  if(sup) loadBackup();
   load();
 }
 async function load(){
@@ -383,5 +434,13 @@ async function save(){
   if(r.ok){msg.className='msg ok';msg.textContent='Sparat! Ändringarna tillämpas inom några sekunder.';load()}
   else{msg.className='msg err';msg.textContent='Fel: '+(d.error||r.status)}
 }
+async function loadBackup(){
+  const b=await (await fetch('api/backup')).json();
+  $('bk_en').checked=!!b.enabled; $('bk_int').value=b.intervalHours; $('bk_time').value=b.time; $('bk_keep').value=b.keep; $('bk_dest').value=b.destination||'';
+  $('bk_status').textContent=b.lastRun?('Senaste körning: '+new Date(b.lastRun).toLocaleString('sv-SE')+' – '+(b.lastStatus||'')):'Ingen körning ännu.';
+}
+function bkBody(){return {enabled:$('bk_en').checked,intervalHours:Number($('bk_int').value)||0,time:$('bk_time').value||'03:00',keep:Number($('bk_keep').value)||14,destination:$('bk_dest').value.trim()}}
+async function saveBackup(){const m=$('bk_msg');m.className='';m.textContent='Sparar…';const r=await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});if(r.ok){m.className='msg ok';m.textContent='Sparat.';loadBackup()}else{const d=await r.json();m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
+async function runBackup(){const m=$('bk_msg');m.className='';m.textContent='Kör…';await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});const r=await fetch('api/backup/run',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const d=await r.json();if(r.ok){m.className='msg ok';m.textContent='Backup klar.';loadBackup()}else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
 init();
 </script></body></html>`;
