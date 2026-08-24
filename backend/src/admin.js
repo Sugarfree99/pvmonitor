@@ -1,28 +1,89 @@
 import express from "express";
 import { writeFileSync } from "node:fs";
+import crypto from "node:crypto";
 import { config, reloadConfig } from "./config.js";
 
 export const adminRouter = express.Router();
 
-// --- Autentisering (Basic auth mot ADMIN_PASSWORD i .env) ---
-function auth(req, res, next) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) {
-    res.status(503).send("Admin är inaktiverat: sätt ADMIN_PASSWORD i backend/.env");
+const COOKIE = "pv_session";
+const SESSION_HOURS = 12;
+
+// Konton läses från miljön. superadmin har fulla rättigheter; admin får bara
+// redigera omformare (inte CO2-faktor eller anläggningsstruktur).
+function accounts() {
+  const list = [];
+  if (process.env.SUPERADMIN_PASSWORD) {
+    list.push({
+      user: process.env.SUPERADMIN_USER || "superadmin",
+      pass: process.env.SUPERADMIN_PASSWORD,
+      role: "superadmin"
+    });
+  }
+  if (process.env.ADMIN_PASSWORD) {
+    list.push({
+      user: process.env.ADMIN_USER || "admin",
+      pass: process.env.ADMIN_PASSWORD,
+      role: "admin"
+    });
+  }
+  return list;
+}
+
+function secret() {
+  return (
+    (process.env.SESSION_SECRET || "") +
+    (process.env.ADMIN_PASSWORD || "") +
+    (process.env.SUPERADMIN_PASSWORD || "") +
+    "pv-monitor-session-v1"
+  );
+}
+
+function sign(role, exp) {
+  const data = `${role}.${exp}`;
+  const sig = crypto.createHmac("sha256", secret()).update(data).digest("base64url");
+  return `${data}.${sig}`;
+}
+
+function verify(token) {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [role, exp, sig] = parts;
+  const expected = crypto
+    .createHmac("sha256", secret())
+    .update(`${role}.${exp}`)
+    .digest("base64url");
+  if (sig.length !== expected.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  if (Number(exp) < Date.now()) return null;
+  return { role };
+}
+
+function parseCookies(req) {
+  const out = {};
+  (req.headers.cookie || "").split(";").forEach((p) => {
+    const i = p.indexOf("=");
+    if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+  });
+  return out;
+}
+
+function currentRole(req) {
+  return verify(parseCookies(req)[COOKIE])?.role || null;
+}
+
+function requireAuth(req, res, next) {
+  if (accounts().length === 0) {
+    res.status(503).json({ error: "Admin avstängt: sätt ADMIN_PASSWORD/SUPERADMIN_PASSWORD i .env" });
     return;
   }
-  const header = req.headers.authorization || "";
-  const [scheme, encoded] = header.split(" ");
-  if (scheme === "Basic" && encoded) {
-    const decoded = Buffer.from(encoded, "base64").toString();
-    const pass = decoded.slice(decoded.indexOf(":") + 1);
-    if (pass === pw) {
-      next();
-      return;
-    }
+  const role = currentRole(req);
+  if (!role) {
+    res.status(401).json({ error: "Ej inloggad" });
+    return;
   }
-  res.set("WWW-Authenticate", 'Basic realm="PV Monitor Admin"');
-  res.status(401).send("Autentisering krävs");
+  req.role = role;
+  next();
 }
 
 function slug(s) {
@@ -99,7 +160,31 @@ function validate(body) {
   return null;
 }
 
-adminRouter.get("/api/config", auth, (_req, res) => {
+adminRouter.post("/login", express.json(), (req, res) => {
+  const { username, password } = req.body || {};
+  const acc = accounts().find((a) => a.user === username && a.pass === password);
+  if (!acc) {
+    res.status(401).json({ error: "Fel användarnamn eller lösenord" });
+    return;
+  }
+  const exp = Date.now() + SESSION_HOURS * 3600 * 1000;
+  res.set(
+    "Set-Cookie",
+    `${COOKIE}=${sign(acc.role, exp)}; HttpOnly; Path=/admin; Max-Age=${SESSION_HOURS * 3600}; SameSite=Lax`
+  );
+  res.json({ ok: true, role: acc.role });
+});
+
+adminRouter.post("/logout", (_req, res) => {
+  res.set("Set-Cookie", `${COOKIE}=; HttpOnly; Path=/admin; Max-Age=0; SameSite=Lax`);
+  res.json({ ok: true });
+});
+
+adminRouter.get("/api/me", (req, res) => {
+  res.json({ role: currentRole(req), enabled: accounts().length > 0 });
+});
+
+adminRouter.get("/api/config", requireAuth, (_req, res) => {
   res.json({
     co2FactorKgPerKwh: config.co2FactorKgPerKwh,
     sites: config.sites,
@@ -108,12 +193,41 @@ adminRouter.get("/api/config", auth, (_req, res) => {
   });
 });
 
-adminRouter.post("/api/config", auth, express.json({ limit: "1mb" }), (req, res) => {
+adminRouter.post("/api/config", requireAuth, express.json({ limit: "1mb" }), (req, res) => {
   const err = validate(req.body);
   if (err) {
     res.status(400).json({ error: err });
     return;
   }
+
+  // admin får inte ändra CO2-faktor eller anläggningsstruktur (namn/antal) –
+  // det kräver superadmin.
+  if (req.role !== "superadmin") {
+    const curIds = config.sites.map((s) => s.id).sort().join(",");
+    const newIds = (req.body.sites || [])
+      .map((s) => String(s.id || "").trim())
+      .sort()
+      .join(",");
+    const curNames = new Map(config.sites.map((s) => [s.id, s.name]));
+    let structuralChange =
+      curIds !== newIds ||
+      Number(req.body.co2FactorKgPerKwh) !== Number(config.co2FactorKgPerKwh);
+    if (!structuralChange) {
+      for (const s of req.body.sites || []) {
+        if (curNames.get(String(s.id || "").trim()) !== String(s.name || "").trim()) {
+          structuralChange = true;
+          break;
+        }
+      }
+    }
+    if (structuralChange) {
+      res.status(403).json({
+        error: "Endast superadmin kan ändra CO₂-faktor eller lägga till/ta bort/döpa om anläggningar."
+      });
+      return;
+    }
+  }
+
   try {
     const normalized = normalize(req.body);
     writeFileSync(config.configPath, JSON.stringify(normalized, null, 2) + "\n");
@@ -124,7 +238,7 @@ adminRouter.post("/api/config", auth, express.json({ limit: "1mb" }), (req, res)
   }
 });
 
-adminRouter.get("/", auth, (_req, res) => {
+adminRouter.get("/", (_req, res) => {
   res.type("html").send(ADMIN_HTML);
 });
 
@@ -159,33 +273,77 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   .msg.err{background:rgba(248,113,113,.15);color:var(--red)}
   .disabled{opacity:.5}
   .hint{color:var(--dim);font-size:.8rem}
+  .login{max-width:360px;margin:6rem auto;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:2rem}
+  .login h2{margin:0 0 1.2rem}
+  .login input{margin-bottom:1rem}
+  .login button{width:100%;background:var(--acc);color:#1a1205;font-size:1rem;padding:.8rem}
+  .badge{display:inline-block;padding:.2rem .7rem;border-radius:999px;font-size:.8rem;font-weight:700}
+  .badge.super{background:rgba(255,179,0,.2);color:var(--acc)}
+  .badge.admin{background:rgba(52,211,153,.2);color:var(--grn)}
+  .hdr{display:flex;align-items:center;gap:1rem;justify-content:space-between;margin-bottom:.4rem}
+  .b-out{background:#243056;color:var(--tx)}
 </style></head><body>
-<h1>PV Monitor – Administration</h1>
-<p class="sub">Redigera anläggningar och omformare. Ändringar tillämpas direkt efter Spara (ingen omstart krävs).</p>
-<div class="top">
-  <div class="fld"><label>CO₂-faktor (kg/kWh)</label><input id="co2" class="num" type="number" step="0.01"></div>
-  <div class="fld"><label>Konfigfil</label><input id="cfgpath" disabled></div>
+<div id="login" class="login" style="display:none">
+  <h2>PV Monitor – Logga in</h2>
+  <input id="lu" placeholder="Användarnamn" autocomplete="username">
+  <input id="lp" type="password" placeholder="Lösenord" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+  <button onclick="doLogin()">Logga in</button>
+  <div id="lmsg" class="msg" style="margin-top:1rem"></div>
 </div>
-<div id="sites"></div>
-<button class="b-add" onclick="addSite()">+ Lägg till anläggning</button>
-<div class="bar">
-  <button class="b-save" onclick="save()">Spara ändringar</button>
-  <span id="msg"></span>
+<div id="app" style="display:none">
+  <div class="hdr">
+    <h1>PV Monitor – Administration</h1>
+    <div><span id="rolebadge" class="badge"></span> <button class="b-out" onclick="doLogout()">Logga ut</button></div>
+  </div>
+  <p class="sub">Redigera anläggningar och omformare. Ändringar tillämpas direkt efter Spara (ingen omstart krävs).</p>
+  <div class="top">
+    <div class="fld"><label>CO₂-faktor (kg/kWh)</label><input id="co2" class="num" type="number" step="0.01"></div>
+    <div class="fld"><label>Konfigfil</label><input id="cfgpath" disabled></div>
+  </div>
+  <div id="sites"></div>
+  <button id="addSiteBtn" class="b-add" onclick="addSite()">+ Lägg till anläggning</button>
+  <div class="bar">
+    <button class="b-save" onclick="save()">Spara ändringar</button>
+    <span id="msg"></span>
+  </div>
 </div>
 <script>
-let state={co2FactorKgPerKwh:0.4,sites:[]};
+let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null;
+const $=id=>document.getElementById(id);
 function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;')}
+function show(v){ $('login').style.display=v==='login'?'block':'none'; $('app').style.display=v==='app'?'block':'none'; }
+async function init(){
+  const me=await (await fetch('api/me')).json();
+  if(!me.enabled){ $('login').style.display='block'; $('lmsg').className='msg err'; $('lmsg').textContent='Admin är avstängt (sätt lösenord i .env).'; return; }
+  if(me.role){ role=me.role; startApp(); } else { show('login'); }
+}
+async function doLogin(){
+  const r=await fetch('login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:$('lu').value,password:$('lp').value})});
+  const d=await r.json();
+  if(r.ok){ role=d.role; startApp(); } else { $('lmsg').className='msg err'; $('lmsg').textContent=d.error||'Inloggning misslyckades'; }
+}
+async function doLogout(){ await fetch('logout',{method:'POST'}); role=null; location.reload(); }
+function startApp(){
+  show('app');
+  const sup=role==='superadmin';
+  $('rolebadge').textContent=sup?'Superadmin':'Admin';
+  $('rolebadge').className='badge '+(sup?'super':'admin');
+  $('co2').disabled=!sup;
+  $('addSiteBtn').style.display=sup?'inline-block':'none';
+  load();
+}
 async function load(){
-  const r=await fetch('api/config'); const d=await r.json();
+  const d=await (await fetch('api/config')).json();
   state={co2FactorKgPerKwh:d.co2FactorKgPerKwh,sites:(d.sites||[]).map(s=>({id:s.id,name:s.name,
     inverters:(s.inverters||[]).map(i=>({id:i.id,name:i.name,model:i.model||'',host:i.host||'',
       port:i.port||1502,unitId:i.unitId||71,capacityKw:i.capacityW?i.capacityW/1000:'',enabled:i.enabled!==false}))}))};
-  document.getElementById('co2').value=state.co2FactorKgPerKwh;
-  document.getElementById('cfgpath').value=d.configPath+(d.mock?'  (simulatorläge)':'');
+  $('co2').value=state.co2FactorKgPerKwh;
+  $('cfgpath').value=d.configPath+(d.mock?'  (simulatorläge)':'');
   render();
 }
 function render(){
-  const c=document.getElementById('sites'); c.innerHTML='';
+  const sup=role==='superadmin';
+  const c=$('sites'); c.innerHTML='';
   state.sites.forEach((s,si)=>{
     const rows=s.inverters.map((inv,ii)=>\`<tr class="\${inv.enabled?'':'disabled'}">
       <td><input value="\${esc(inv.name)}" oninput="upd(\${si},\${ii},'name',this.value)"></td>
@@ -199,8 +357,8 @@ function render(){
     </tr>\`).join('');
     const div=document.createElement('div'); div.className='site';
     div.innerHTML=\`<div class="site-head">
-        <input value="\${esc(s.name)}" oninput="updSite(\${si},'name',this.value)">
-        <button class="b-del" onclick="delSite(\${si})">Ta bort anläggning</button>
+        <input value="\${esc(s.name)}" \${sup?'':'disabled'} oninput="updSite(\${si},'name',this.value)">
+        \${sup?\`<button class="b-del" onclick="delSite(\${si})">Ta bort anläggning</button>\`:''}
       </div>
       <table><thead><tr><th>Namn</th><th>Modell</th><th>IP-adress</th><th>Port</th><th>Unit-ID</th><th>Kapacitet kW</th><th>I drift</th><th></th></tr></thead>
       <tbody>\${rows}</tbody></table>
@@ -215,8 +373,8 @@ function delInv(si,ii){state.sites[si].inverters.splice(ii,1);render()}
 function addSite(){state.sites.push({name:'Ny anläggning',inverters:[]});render()}
 function delSite(si){if(confirm('Ta bort hela anläggningen?')){state.sites.splice(si,1);render()}}
 async function save(){
-  const msg=document.getElementById('msg'); msg.className=''; msg.textContent='Sparar…';
-  const body={co2FactorKgPerKwh:Number(document.getElementById('co2').value)||0.4,
+  const msg=$('msg'); msg.className=''; msg.textContent='Sparar…';
+  const body={co2FactorKgPerKwh:Number($('co2').value)||0.4,
     sites:state.sites.map(s=>({id:s.id,name:s.name,inverters:s.inverters.map(i=>({id:i.id,name:i.name,
       model:i.model,host:i.host,port:Number(i.port),unitId:Number(i.unitId),
       capacityW:i.capacityKw?Math.round(Number(i.capacityKw)*1000):0,enabled:i.enabled}))}))};
@@ -225,5 +383,5 @@ async function save(){
   if(r.ok){msg.className='msg ok';msg.textContent='Sparat! Ändringarna tillämpas inom några sekunder.';load()}
   else{msg.className='msg err';msg.textContent='Fel: '+(d.error||r.status)}
 }
-load();
+init();
 </script></body></html>`;

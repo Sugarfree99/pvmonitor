@@ -33,16 +33,17 @@ const server = app.listen(config.port, config.host, () => {
   startPoller();
 });
 
-// Backa RAM-databasen till beständig disk 1 gång/min (skyddar mot dataförlust
-// vid strömavbrott utan att slita på hårddisken).
+// Backa RAM-databasen till beständig disk (skyddar mot dataförlust vid
+// strömavbrott). Intervallet styr hur stor lucka timdiagrammet kan få.
 let backupTimer = null;
 if (process.env.DB_BACKUP_PATH) {
   const target = process.env.DB_BACKUP_PATH;
+  const intervalMs = Number(process.env.DB_BACKUP_INTERVAL_MS ?? 15_000);
   backupTimer = setInterval(() => {
     backupTo(target).catch((err) =>
       console.warn(`[backup] misslyckades: ${err.message}`)
     );
-  }, 60_000);
+  }, intervalMs);
 }
 
 function shutdown() {
