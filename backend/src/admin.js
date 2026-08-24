@@ -1,5 +1,7 @@
 import express from "express";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import { config, reloadConfig } from "./config.js";
 import { getBackupSettings, updateBackupSettings, runBackupNow } from "./backup.js";
@@ -8,26 +10,68 @@ export const adminRouter = express.Router();
 
 const COOKIE = "pv_session";
 const SESSION_HOURS = 12;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const authPath = join(__dirname, "..", "config", "auth.json");
 
-// Konton läses från miljön. superadmin har fulla rättigheter; admin får bara
-// redigera omformare (inte CO2-faktor eller anläggningsstruktur).
-function accounts() {
-  const list = [];
-  if (process.env.SUPERADMIN_PASSWORD) {
-    list.push({
-      user: process.env.SUPERADMIN_USER || "superadmin",
-      pass: process.env.SUPERADMIN_PASSWORD,
-      role: "superadmin"
-    });
+// Lagrade (hashade) lösenord har företräde framför .env. Ändras i admin.
+function getStoredAuth() {
+  try {
+    return JSON.parse(readFileSync(authPath, "utf-8"));
+  } catch {
+    return {};
   }
-  if (process.env.ADMIN_PASSWORD) {
-    list.push({
-      user: process.env.ADMIN_USER || "admin",
-      pass: process.env.ADMIN_PASSWORD,
-      role: "admin"
-    });
+}
+
+function hashPw(pw) {
+  const salt = crypto.randomBytes(16);
+  const h = crypto.scryptSync(String(pw), salt, 32);
+  return `scrypt:${salt.toString("hex")}:${h.toString("hex")}`;
+}
+
+function verifyPw(pw, stored) {
+  const parts = String(stored).split(":");
+  if (parts.length !== 3 || parts[0] !== "scrypt") return false;
+  const h = crypto.scryptSync(String(pw), Buffer.from(parts[1], "hex"), 32);
+  const exp = Buffer.from(parts[2], "hex");
+  return h.length === exp.length && crypto.timingSafeEqual(h, exp);
+}
+
+function setStoredPassword(role, pw) {
+  const cur = getStoredAuth();
+  cur[role] = hashPw(pw);
+  mkdirSync(dirname(authPath), { recursive: true });
+  writeFileSync(authPath, JSON.stringify(cur, null, 2) + "\n");
+}
+
+function userForRole(role) {
+  return role === "superadmin"
+    ? process.env.SUPERADMIN_USER || "superadmin"
+    : process.env.ADMIN_USER || "admin";
+}
+
+function envPassword(role) {
+  return role === "superadmin"
+    ? process.env.SUPERADMIN_PASSWORD
+    : process.env.ADMIN_PASSWORD;
+}
+
+function roleEnabled(role) {
+  return !!(getStoredAuth()[role] || envPassword(role));
+}
+
+function adminEnabled() {
+  return roleEnabled("admin") || roleEnabled("superadmin");
+}
+
+// Verifierar inloggning: lagrat hash har företräde, annars .env-lösenord.
+function checkLogin(username, password) {
+  for (const role of ["superadmin", "admin"]) {
+    if (!roleEnabled(role) || username !== userForRole(role)) continue;
+    const stored = getStoredAuth()[role];
+    if (stored) return verifyPw(password, stored) ? role : null;
+    return envPassword(role) && password === envPassword(role) ? role : null;
   }
-  return list;
+  return null;
 }
 
 function secret() {
@@ -74,7 +118,7 @@ function currentRole(req) {
 }
 
 function requireAuth(req, res, next) {
-  if (accounts().length === 0) {
+  if (!adminEnabled()) {
     res.status(503).json({ error: "Admin avstängt: sätt ADMIN_PASSWORD/SUPERADMIN_PASSWORD i .env" });
     return;
   }
@@ -163,17 +207,17 @@ function validate(body) {
 
 adminRouter.post("/login", express.json(), (req, res) => {
   const { username, password } = req.body || {};
-  const acc = accounts().find((a) => a.user === username && a.pass === password);
-  if (!acc) {
+  const role = checkLogin(username, password);
+  if (!role) {
     res.status(401).json({ error: "Fel användarnamn eller lösenord" });
     return;
   }
   const exp = Date.now() + SESSION_HOURS * 3600 * 1000;
   res.set(
     "Set-Cookie",
-    `${COOKIE}=${sign(acc.role, exp)}; HttpOnly; Path=/admin; Max-Age=${SESSION_HOURS * 3600}; SameSite=Lax`
+    `${COOKIE}=${sign(role, exp)}; HttpOnly; Path=/admin; Max-Age=${SESSION_HOURS * 3600}; SameSite=Lax`
   );
-  res.json({ ok: true, role: acc.role });
+  res.json({ ok: true, role });
 });
 
 adminRouter.post("/logout", (_req, res) => {
@@ -182,7 +226,26 @@ adminRouter.post("/logout", (_req, res) => {
 });
 
 adminRouter.get("/api/me", (req, res) => {
-  res.json({ role: currentRole(req), enabled: accounts().length > 0 });
+  res.json({ role: currentRole(req), enabled: adminEnabled() });
+});
+
+// Byt lösenord (endast superadmin). Lagras hashat i config/auth.json.
+adminRouter.post("/api/password", requireAuth, express.json(), (req, res) => {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return;
+  }
+  const { role, password } = req.body || {};
+  if (!["admin", "superadmin"].includes(role)) {
+    res.status(400).json({ error: "Ogiltig roll" });
+    return;
+  }
+  if (!password || String(password).length < 4) {
+    res.status(400).json({ error: "Lösenordet måste vara minst 4 tecken" });
+    return;
+  }
+  setStoredPassword(role, String(password));
+  res.json({ ok: true });
 });
 
 adminRouter.get("/api/config", requireAuth, (_req, res) => {
@@ -353,6 +416,20 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
       <p class="hint" id="bk_status"></p>
     </div>
   </div>
+  <div id="acctSection" style="display:none;margin-top:2rem">
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Konton &amp; lösenord</h2>
+    <p class="hint">Byt inloggningslösenord (lagras hashat, inte i klartext). Gäller direkt.</p>
+    <div class="site">
+      <div class="top">
+        <div class="fld"><label>Nytt admin-lösenord</label><input id="pw_admin" type="password" placeholder="lämna tomt = oförändrat"></div>
+        <div class="fld"><label>Nytt superadmin-lösenord</label><input id="pw_super" type="password" placeholder="lämna tomt = oförändrat"></div>
+      </div>
+      <div class="bar" style="position:static;padding:0">
+        <button class="b-save" onclick="savePasswords()">Spara lösenord</button>
+        <span id="pw_msg"></span>
+      </div>
+    </div>
+  </div>
   <div class="bar">
     <button class="b-save" onclick="save()">Spara ändringar</button>
     <span id="msg"></span>
@@ -382,6 +459,7 @@ function startApp(){
   $('co2').disabled=!sup;
   $('addSiteBtn').style.display=sup?'inline-block':'none';
   $('backupSection').style.display=sup?'block':'none';
+  $('acctSection').style.display=sup?'block':'none';
   if(sup) loadBackup();
   load();
 }
@@ -444,5 +522,18 @@ async function loadBackup(){
 function bkBody(){return {enabled:$('bk_en').checked,intervalHours:Number($('bk_int').value)||0,time:$('bk_time').value||'03:00',keep:Number($('bk_keep').value)||14,destination:$('bk_dest').value.trim(),compression:$('bk_comp').value}}
 async function saveBackup(){const m=$('bk_msg');m.className='';m.textContent='Sparar…';const r=await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});if(r.ok){m.className='msg ok';m.textContent='Sparat.';loadBackup()}else{const d=await r.json();m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
 async function runBackup(){const m=$('bk_msg');m.className='';m.textContent='Kör…';await fetch('api/backup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(bkBody())});const r=await fetch('api/backup/run',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const d=await r.json();if(r.ok){m.className='msg ok';m.textContent='Backup klar';loadBackup()}else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}}
+async function savePasswords(){
+  const m=$('pw_msg');m.className='';m.textContent='Sparar…';
+  const jobs=[];
+  if($('pw_admin').value) jobs.push(['admin',$('pw_admin').value]);
+  if($('pw_super').value) jobs.push(['superadmin',$('pw_super').value]);
+  if(!jobs.length){m.className='msg err';m.textContent='Inget lösenord angivet.';return}
+  for(const [role,password] of jobs){
+    const r=await fetch('api/password',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role,password})});
+    if(!r.ok){const d=await r.json();m.className='msg err';m.textContent='Fel: '+(d.error||r.status);return}
+  }
+  $('pw_admin').value='';$('pw_super').value='';
+  m.className='msg ok';m.textContent='Lösenord uppdaterat.';
+}
 init();
 </script></body></html>`;

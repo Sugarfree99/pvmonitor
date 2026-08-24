@@ -20,6 +20,9 @@ backend/.env
 # Runtime-genererad backup-konfiguration (per miljö)
 backend/config/backup.json
 
+# Lagrade (hashade) admin-lösenord (per miljö)
+backend/config/auth.json
+
 # Logs
 *.log
 npm-debug.log*

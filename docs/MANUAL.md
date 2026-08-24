@@ -130,10 +130,10 @@ Webbaserat, nås från valfri dator på nätverket.
     hela anläggningar, samt databasbackup-inställningar.
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
 - Att lägga till en anläggning skapar automatiskt en ny roterande vy på skärmen.
-
-Lösenord sätts i `backend/.env` (`ADMIN_PASSWORD`, `SUPERADMIN_PASSWORD`). Byt de
-tillfälliga lösenorden och starta om `pv-backend`. Åtkomst sker över LAN via
-inloggningsruta med session-cookie.
+- **Lösenord** byts direkt i admin (superadmin → *Konton & lösenord*) och lagras
+  **hashat** (inte i klartext). De initiala lösenorden sätts i `backend/.env`
+  (`ADMIN_PASSWORD`, `SUPERADMIN_PASSWORD`) och används tills de bytts i admin.
+  Åtkomst sker över LAN via inloggningsruta med session-cookie.
 
 ---
 
@@ -146,8 +146,7 @@ inloggningsruta med session-cookie.
   inga popups eller felrutor visas.
 - **Efter strömavbrott:** BIOS (Restore AC Power Loss = Power On) startar datorn,
   systemd startar tjänsterna, och en hårdvaru-watchdog startar om vid frysning.
-- **Webbläsarval:** Firefox ESR används eftersom Debian 13:s Chromium kraschar vid
-  start.
+- **Webbläsarval:** Firefox ESR
 
 ---
 
@@ -191,7 +190,28 @@ felet pågår.
 
 ---
 
-## 10. Adresser och portar (sammanfattning)
+## 10. Driftsättnings-checklista (skarp drift)
+
+När de riktiga omformarna kopplas in – gå från test till skarp drift:
+
+1. **Omformar-IP:er:** logga in i admin (superadmin) och fyll i varje omformares
+   riktiga IP-adress, port (1502) och unit-ID (71). Kontrollera modell/kapacitet.
+2. **Verifiera Modbus-registren** mot KOSTAL:s dokument för CI-serien (se
+   [MODBUS.md](MODBUS.md)).
+3. **Stäng av simulatorn:** `sudo systemctl disable --now pv-simulator`.
+4. **Peka mot riktig config:** ta bort raden `INVERTERS_CONFIG=...sim.json` ur
+   `backend/.env` (så att `config/inverters.json` används) och
+   `sudo systemctl restart pv-backend`.
+5. **Byt admin-lösenord** (admin → Konton & lösenord, eller i `.env`).
+6. **Kontrollera backup:** att extern backup är aktiverad och att "Kör backup nu"
+   lyckas.
+7. **Verifiera skärmen:** alla omformare online (gröna prickar), inga banners.
+8. **BIOS:** bekräfta Restore AC Power Loss = Power On.
+
+> Simulatorn är enbart ett teststeg innan riktiga omformare finns – den ska inte
+> vara igång i skarp drift.
+
+## 11. Adresser och portar (sammanfattning)
 
 | Funktion | Adress |
 | --- | --- |
@@ -203,7 +223,7 @@ felet pågår.
 
 ---
 
-## 11. Exportera till PDF
+## 12. Exportera till PDF
 
 Denna manual underhålls som Markdown i repot. Vid behov av en PDF:
 - Öppna filen i VS Code och använd en Markdown-till-PDF-funktion, eller

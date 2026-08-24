@@ -66,7 +66,9 @@ function useStatus(data, error, lastUpdated) {
 export default function App() {
   const { data, error, lastUpdated } = useData(5000);
   const history = useHistory(60000);
-  const [index, setIndex] = useState(0);
+  // Valfri ?view=N låser en specifik vy och pausar rotationen (demo/skärmdump).
+  const forcedView = new URLSearchParams(window.location.search).get("view");
+  const [index, setIndex] = useState(forcedView !== null ? Number(forcedView) : 0);
   const status = useStatus(data, error, lastUpdated);
   // Ingen aktuell kontakt med servern → data är inaktuell (visa som offline).
   const stale = status?.level === "error";
@@ -91,6 +93,7 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (forcedView !== null) return; // pausad på en vald vy
     if (views.length <= 1) return;
     const timer = setInterval(
       () => setIndex((i) => (i + 1) % views.length),
