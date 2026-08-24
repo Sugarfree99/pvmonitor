@@ -273,6 +273,7 @@ adminRouter.get("/", (_req, res) => {
 });
 
 const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
+<base href="/admin/">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PV Monitor – Admin</title>
 <style>
