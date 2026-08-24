@@ -81,6 +81,8 @@ export default function App() {
       <ProductionView key="production" history={history} snapshot={data} />
     );
     for (const site of data.sites) {
+      // Dölj anläggningar utan aktiva omformare från karusellen.
+      if (site.invertersTotal === 0) continue;
       views.push(
         <SiteView
           key={site.id}
