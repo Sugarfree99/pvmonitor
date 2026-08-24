@@ -335,7 +335,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   <button id="addSiteBtn" class="b-add" onclick="addSite()">+ Lägg till anläggning</button>
   <div id="backupSection" style="display:none;margin-top:2rem">
     <h2 style="font-size:1.2rem;margin-bottom:.2rem">Databasbackup (extern kopia)</h2>
-    <p class="hint">Schemalagd kopia till en målplats – säkrare än mejl. Målplats = lokal/monterad mapp eller <code>user@server:/sökväg</code> (scp, kräver SSH-nyckel).</p>
+    <p class="hint">Schemalagd kopia till lokal/monterad mapp eller <code>user@server:/sökväg</code> (scp, kräver SSH-nyckel).</p>
     <div class="site">
       <div class="top">
         <div class="fld"><label>Aktiverad</label><input id="bk_en" type="checkbox"></div>
