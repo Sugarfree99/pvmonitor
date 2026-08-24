@@ -130,6 +130,40 @@ mbpoll -t 4:float -r 173 -a 71 -p 1502 <omformarens-ip>
 ```
 
 
+## Uppdatera efter installation (deploy)
+
+`/opt/pvmonitor` är en git-checkout, så uppdateringar hämtas med `git pull` och
+tjänsterna startas om. Eftersom passwordless sudo är borttaget körs en
+**engångsinstallation** som ger driftanvändaren (`smartsource`) rätt att köra
+**enbart** deploy-skriptet utan lösenord.
+
+**Engångsinstallation (kräver root-lösenordet en gång):**
+
+```bash
+su -c 'cd /opt/pvmonitor \
+  && git config --global --add safe.directory /opt/pvmonitor \
+  && git pull --ff-only \
+  && bash deploy/setup-deploy-sudo.sh smartsource \
+  && bash deploy/update.sh'
+```
+
+Detta hämtar senaste koden, installerar `/usr/local/sbin/pvmonitor-update`
+(root-ägt) samt en `sudoers.d`-regel, och kör en första driftsättning.
+
+**Därefter – varje uppdatering (inget lösenord):**
+
+```bash
+ssh smartsource@172.22.2.81 'sudo pvmonitor-update'
+```
+
+Skriptet gör `git pull`, `npm install`, bygger frontenden, återställer ägarskap
+till `kiosk` och startar om `pv-backend` + `pv-frontend`. Runtime-filer
+(`.env`, `config/auth.json`, `config/backup.json`, `data/`) rörs inte – de är
+git-ignorerade.
+
+> Ändras `deploy/update.sh` i repot, kör `setup-deploy-sudo.sh` igen för att
+> uppdatera den root-ägda kopian i `/usr/local/sbin/pvmonitor-update`.
+
 ## Fjärrstyrning
 
 Installera Tailscale för utgående VPN-tunnel så att du kan SSH:a hemifrån:
