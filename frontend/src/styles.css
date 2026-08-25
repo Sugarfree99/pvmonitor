@@ -498,11 +498,11 @@ body {
   pointer-events: none;
 }
 .supplier__rsyd {
-  height: clamp(27px, 5vh, 49px);
+  height: clamp(32px, 6vh, 59px);
   width: auto;
 }
 .supplier__logo {
-  height: clamp(27px, 5vh, 49px);
+  height: clamp(32px, 6vh, 59px);
   width: auto;
   filter: brightness(0) invert(1);
   opacity: 0.9;
