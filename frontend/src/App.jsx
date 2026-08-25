@@ -145,6 +145,10 @@ export default function App() {
             {new Date(lastUpdated).toLocaleTimeString("sv-SE")}
           </div>
         )}
+        <div className="supplier">
+          <img className="supplier__logo" src="/bbk-logo.png" alt="Bredbandskompetens" />
+          <span className="supplier__name">Bredbandskompetens</span>
+        </div>
         <Clock />
       </footer>
     </div>
