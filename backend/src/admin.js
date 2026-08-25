@@ -358,7 +358,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   .b-add{background:#243056;color:var(--tx)}
   .b-del{background:transparent;color:var(--red);border:1px solid var(--red);padding:.4rem .7rem}
   .b-save{background:var(--acc);color:#1a1205;font-size:1.05rem;padding:.8rem 1.6rem}
-  .bar{display:flex;gap:1rem;align-items:center;margin-top:1.5rem;position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg),transparent);padding:1rem 0}
+  .bar{display:flex;gap:1rem;align-items:center;margin-top:1.5rem;padding:1rem 0}
   .top{display:flex;gap:2rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:1.5rem}
   .fld{display:flex;flex-direction:column;gap:.3rem}
   .fld label{color:var(--dim);font-size:.85rem}
