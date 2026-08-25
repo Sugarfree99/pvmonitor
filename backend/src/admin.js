@@ -397,6 +397,10 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   </div>
   <div id="sites"></div>
   <button id="addSiteBtn" class="b-add" onclick="addSite()">+ Lägg till anläggning</button>
+  <div class="bar">
+    <button class="b-save" onclick="save()">Spara anläggningar &amp; omformare</button>
+    <span id="msg"></span>
+  </div>
   <div id="backupSection" style="display:none;margin-top:2rem">
     <h2 style="font-size:1.2rem;margin-bottom:.2rem">Databasbackup (extern kopia)</h2>
     <p class="hint">Schemalagd kopia till lokal/monterad mapp eller <code>user@server:/sökväg</code> (scp, kräver SSH-nyckel).</p>
@@ -430,10 +434,6 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
         <span id="pw_msg"></span>
       </div>
     </div>
-  </div>
-  <div class="bar">
-    <button class="b-save" onclick="save()">Spara ändringar</button>
-    <span id="msg"></span>
   </div>
 </div>
 <script>
