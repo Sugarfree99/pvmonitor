@@ -5,8 +5,8 @@ import React from "react";
 export default function Logo({ size = 120 }) {
   return (
     <img
-      src="/rsyd-emblem.png"
-      alt="Logotyp"
+      src="/rsyd-shield.png"
+      alt="Räddningstjänsten Syd"
       style={{ height: size, width: "auto", objectFit: "contain" }}
       onError={(e) => {
         e.currentTarget.style.display = "none";
