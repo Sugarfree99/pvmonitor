@@ -494,11 +494,11 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 1.4rem;
   pointer-events: none;
 }
 .supplier__rsyd {
-  height: clamp(30px, 5.5vh, 54px);
+  height: clamp(27px, 5vh, 49px);
   width: auto;
 }
 .supplier__logo {
