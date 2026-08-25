@@ -354,6 +354,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   input,select{background:#111a33;border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:.5rem .6rem;font-size:.95rem;width:100%}
   input[type=checkbox]{width:auto;transform:scale(1.3)}
   .num{width:90px}
+  .num[type=time]{width:130px}
   button{border:0;border-radius:9px;padding:.55rem 1rem;font-weight:600;cursor:pointer;font-size:.9rem}
   .b-add{background:#243056;color:var(--tx)}
   .b-del{background:transparent;color:var(--red);border:1px solid var(--red);padding:.4rem .7rem}
