@@ -502,7 +502,7 @@ body {
   width: auto;
 }
 .supplier__logo {
-  height: clamp(32px, 6vh, 59px);
+  height: clamp(24px, 4.5vh, 44px);
   width: auto;
   filter: brightness(0) invert(1);
   opacity: 0.9;
