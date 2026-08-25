@@ -27,7 +27,7 @@ frontend (skärm). Omformarna är sanningskälla för energitotaler.
 
 ## 2. Vad visas på skärmen
 
-Skärmen roterar automatiskt mellan vyerna (~15 sekunder per vy):
+Skärmen roterar automatiskt mellan vyerna (standard ~15 sekunder per vy, ställbart i admin):
 
 ### Vy 1 – Översikt (hela fastigheten)
 - **Effekt just nu** (kW) – summerad aktuell effekt.
@@ -132,6 +132,7 @@ Webbaserat, nås från valfri dator på nätverket.
     hela anläggningar, databasbackup-inställningar samt sidfotens logotyper
     (välja, ladda upp, sortera ordning och storlek).
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
+- **Visningstid per vy** (sekunder) ställs in i admin och styr karusellens rotation.
 - Att lägga till en anläggning skapar automatiskt en ny roterande vy på skärmen.
 - **Lösenord** byts direkt i admin (superadmin → *Konton & lösenord*) och lagras
   **hashat** (inte i klartext). De initiala lösenorden sätts i `backend/.env`

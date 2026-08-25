@@ -77,6 +77,7 @@ export function buildSnapshot() {
   return {
     updatedAt: new Date().toISOString(),
     co2FactorKgPerKwh: config.co2FactorKgPerKwh,
+    rotateSeconds: config.rotateSeconds,
     invertersOnline,
     invertersTotal,
     allOnline: invertersOnline === invertersTotal,

@@ -183,8 +183,10 @@ function normalize(body) {
     };
   });
 
+  const rot = Math.round(Number(body.rotateSeconds));
   return {
     co2FactorKgPerKwh: Number(body.co2FactorKgPerKwh) || 0.4,
+    rotateSeconds: Number.isFinite(rot) ? Math.min(600, Math.max(3, rot)) : 15,
     sites
   };
 }
@@ -276,6 +278,7 @@ adminRouter.post("/api/password", requireAuth, express.json(), (req, res) => {
 adminRouter.get("/api/config", requireAuth, (_req, res) => {
   res.json({
     co2FactorKgPerKwh: config.co2FactorKgPerKwh,
+    rotateSeconds: config.rotateSeconds,
     sites: config.sites,
     configPath: config.configPath,
     mock: config.mock
@@ -425,6 +428,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   <p class="sub">Redigera anläggningar och omformare. Ändringar tillämpas direkt efter Spara (ingen omstart krävs).</p>
   <div class="top">
     <div class="fld"><label>CO₂-faktor (kg/kWh)</label><input id="co2" class="num" type="number" step="0.01"></div>
+    <div class="fld"><label>Sekunder per vy</label><input id="rot" class="num" type="number" min="3" max="600"></div>
     <div class="fld"><label>Konfigfil</label><input id="cfgpath" disabled></div>
   </div>
   <div id="sites"></div>
@@ -519,6 +523,7 @@ async function load(){
     inverters:(s.inverters||[]).map(i=>({id:i.id,name:i.name,model:i.model||'',host:i.host||'',
       port:i.port||1502,unitId:i.unitId||71,capacityKw:i.capacityW?i.capacityW/1000:'',enabled:i.enabled!==false}))}))};
   $('co2').value=state.co2FactorKgPerKwh;
+  $('rot').value=d.rotateSeconds||15;
   $('cfgpath').value=d.configPath+(d.mock?'  (simulatorläge)':'');
   render();
 }
@@ -556,6 +561,7 @@ function delSite(si){if(confirm('Ta bort hela anläggningen?')){state.sites.spli
 async function save(){
   const msg=$('msg'); msg.className=''; msg.textContent='Sparar…';
   const body={co2FactorKgPerKwh:Number($('co2').value)||0.4,
+    rotateSeconds:Number($('rot').value)||15,
     sites:state.sites.map(s=>({id:s.id,name:s.name,inverters:s.inverters.map(i=>({id:i.id,name:i.name,
       model:i.model,host:i.host,port:Number(i.port),unitId:Number(i.unitId),
       capacityW:i.capacityKw?Math.round(Number(i.capacityKw)*1000):0,enabled:i.enabled}))}))};

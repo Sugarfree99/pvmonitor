@@ -34,6 +34,8 @@ export const config = {
   // Aktiv konfigurationsfil (redigeras av admin-gränssnittet).
   configPath,
   co2FactorKgPerKwh: Number(raw.co2FactorKgPerKwh ?? 0.4),
+  // Visningstid per vy i karusellen (sekunder).
+  rotateSeconds: Number(raw.rotateSeconds ?? 15),
   sites: raw.sites ?? []
 };
 
@@ -42,6 +44,7 @@ export const config = {
 export function reloadConfig() {
   const r = loadRaw();
   config.co2FactorKgPerKwh = Number(r.co2FactorKgPerKwh ?? 0.4);
+  config.rotateSeconds = Number(r.rotateSeconds ?? 15);
   config.sites = r.sites ?? [];
   return config;
 }

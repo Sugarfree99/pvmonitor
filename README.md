@@ -17,7 +17,7 @@ starta autonomt efter strömavbrott utan handpåläggning.
 | Frontend   | React (Vite SPA)               | Karusellvy som roterar mellan vyerna var 15:e sekund.        |
 | Kiosk      | Firefox ESR + Openbox (Debian) | Fullskärm utan menyer, muspekare eller felmeddelanden.       |
 
-### Datavyer (karusell, 15 s rotation)
+### Datavyer (karusell, ställbar rotationstid – standard 15 s)
 
 1. **Översikt** — total effekt nu, energi idag (kWh), i år (MWh), totalt producerat, total minskad CO₂.
 2. **Produktion idag** — stapeldiagram över producerad energi per timme under dygnet.

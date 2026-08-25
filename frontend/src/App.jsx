@@ -5,7 +5,7 @@ import OverviewView from "./components/OverviewView.jsx";
 import ProductionView from "./components/ProductionView.jsx";
 import SiteView from "./components/SiteView.jsx";
 
-const ROTATE_MS = 15_000;
+const DEFAULT_ROTATE_SECONDS = 15;
 
 function Clock() {
   const [now, setNow] = useState(new Date());
@@ -94,15 +94,18 @@ export default function App() {
     }
   }
 
+  const rotateMs =
+    (Number(data?.rotateSeconds) || DEFAULT_ROTATE_SECONDS) * 1000;
+
   useEffect(() => {
     if (forcedView !== null) return; // pausad på en vald vy
     if (views.length <= 1) return;
     const timer = setInterval(
       () => setIndex((i) => (i + 1) % views.length),
-      ROTATE_MS
+      rotateMs
     );
     return () => clearInterval(timer);
-  }, [views.length]);
+  }, [views.length, rotateMs]);
 
   if (!data) {
     return (
