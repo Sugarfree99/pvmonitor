@@ -494,7 +494,7 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 1.4rem;
+  gap: 2.1rem;
   pointer-events: none;
 }
 .supplier__logo {
