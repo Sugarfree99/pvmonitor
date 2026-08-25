@@ -1,11 +1,11 @@
 import React from "react";
 
-// Platshållarlogotyp. Ersätt filen public/logo.svg med kundens riktiga logga,
-// eller byt ut den här komponenten mot en <img src="/logo.svg" />.
+// Anläggningens logotyp (Räddningstjänsten Syd-emblem). Byt filen
+// public/rsyd-emblem.png för att uppdatera loggan.
 export default function Logo({ size = 120 }) {
   return (
     <img
-      src="/logo.svg"
+      src="/rsyd-emblem.png"
       alt="Logotyp"
       style={{ height: size, width: "auto", objectFit: "contain" }}
       onError={(e) => {

@@ -147,7 +147,6 @@ export default function App() {
         )}
         <div className="supplier">
           <img className="supplier__logo" src="/bbk-logo.png" alt="Bredbandskompetens" />
-          <span className="supplier__name">Bredbandskompetens</span>
         </div>
         <Clock />
       </footer>

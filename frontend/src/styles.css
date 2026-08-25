@@ -493,7 +493,7 @@ body {
   padding: 0 clamp(2rem, 4vw, 4.5rem);
   gap: 1.5rem;
 }
-/* Leverantörslogga + namn, centrerat längst ner. */
+/* Leverantörslogga (vit), centrerad längst ner. */
 .supplier {
   position: absolute;
   left: 50%;
@@ -504,17 +504,10 @@ body {
   pointer-events: none;
 }
 .supplier__logo {
-  height: clamp(20px, 3.4vh, 30px);
+  height: clamp(22px, 3.8vh, 34px);
   width: auto;
-  background: #fff;
-  border-radius: 6px;
-  padding: 3px 7px;
-}
-.supplier__name {
-  font-size: clamp(0.8rem, 1.3vw, 1.05rem);
-  color: var(--text-dim);
-  letter-spacing: 0.3px;
-  white-space: nowrap;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 .dots {
   display: flex;
@@ -529,8 +522,6 @@ body {
 }
 .dot--active {
   background: var(--accent);
-  width: 34px;
-  border-radius: 6px;
 }
 .stale-badge {
   font-size: 0.95rem;
