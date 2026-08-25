@@ -1,5 +1,4 @@
 import React from "react";
-import Logo from "./Logo.jsx";
 import ProductionChart from "./ProductionChart.jsx";
 import { formatEnergyKwh, formatPower } from "../lib/format.js";
 
@@ -11,7 +10,6 @@ export default function ProductionView({ history, snapshot }) {
   return (
     <section className="view view--production">
       <header className="view__header">
-        <Logo size={90} />
         <h1 className="view__title">Produktion idag</h1>
         <div className="view__summary">
           <span>

@@ -1,6 +1,5 @@
 import React from "react";
 import InverterCard from "./InverterCard.jsx";
-import Logo from "./Logo.jsx";
 import { formatPower, formatEnergyKwh } from "../lib/format.js";
 
 // Vy 2 & 3: En anläggning (SOS eller RSYD) med dess omformare sida vid sida
@@ -13,7 +12,6 @@ export default function SiteView({ site, co2Factor, stale = false }) {
   return (
     <section className="view view--site">
       <header className="view__header">
-        <Logo size={90} />
         <h1 className="view__title">{site.name}-anläggningen</h1>
         <div className="view__summary">
           <span>

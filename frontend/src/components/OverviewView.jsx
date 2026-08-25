@@ -1,6 +1,5 @@
 import React from "react";
 import StatCard from "./StatCard.jsx";
-import Logo from "./Logo.jsx";
 import CapacityBar from "./CapacityBar.jsx";
 import {
   formatPower,
@@ -21,7 +20,6 @@ export default function OverviewView({ snapshot }) {
   return (
     <section className="view view--overview">
       <header className="view__header">
-        <Logo size={110} />
         <h1 className="view__title">Solproduktion – hela fastigheten</h1>
       </header>
 

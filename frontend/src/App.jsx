@@ -146,7 +146,7 @@ export default function App() {
           </div>
         )}
         <div className="supplier">
-          <img className="supplier__rsyd" src="/rsyd-emblem.png" alt="Räddningstjänsten Syd" />
+          <img className="supplier__rsyd" src="/rsyd-shield.png" alt="Räddningstjänsten Syd" />
           <img className="supplier__logo" src="/bbk-logo.png" alt="Bredbandskompetens" />
         </div>
         <Clock />

@@ -498,7 +498,7 @@ body {
   pointer-events: none;
 }
 .supplier__rsyd {
-  height: clamp(24px, 4.2vh, 38px);
+  height: clamp(30px, 5.5vh, 54px);
   width: auto;
 }
 .supplier__logo {
