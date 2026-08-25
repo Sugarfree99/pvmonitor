@@ -497,13 +497,14 @@ body {
   gap: 1.4rem;
   pointer-events: none;
 }
-.supplier__rsyd {
-  height: clamp(32px, 6vh, 59px);
-  width: auto;
-}
 .supplier__logo {
-  height: clamp(24px, 4.5vh, 44px);
+  height: 44px;
   width: auto;
+  max-height: 64px;
+  max-width: 280px;
+  object-fit: contain;
+}
+.supplier__logo--invert {
   filter: brightness(0) invert(1);
   opacity: 0.9;
 }

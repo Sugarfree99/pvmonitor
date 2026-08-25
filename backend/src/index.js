@@ -6,12 +6,16 @@ import { buildSnapshot, buildHistory } from "./aggregate.js";
 import { backupTo } from "./db.js";
 import { adminRouter } from "./admin.js";
 import { startBackupScheduler } from "./backup.js";
+import { logosDir } from "./footer.js";
 
 const app = express();
 app.use(cors());
 
 // Admin-gränssnitt (lösenordsskyddat) för att redigera omformare.
 app.use("/admin", adminRouter);
+
+// Uppladdade sidfotslogotyper (serveras via /api så frontendens proxy når dem).
+app.use("/api/logos", express.static(logosDir));
 
 // Enkel hälsokontroll som kiosk-skriptet väntar på innan Chromium startar.
 app.get("/api/health", (_req, res) => {

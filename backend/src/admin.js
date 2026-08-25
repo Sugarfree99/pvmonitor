@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import { config, reloadConfig } from "./config.js";
 import { getBackupSettings, updateBackupSettings, runBackupNow } from "./backup.js";
+import { getFooter, saveFooter, saveUpload } from "./footer.js";
 
 export const adminRouter = express.Router();
 
@@ -229,6 +230,30 @@ adminRouter.get("/api/me", (req, res) => {
   res.json({ role: currentRole(req), enabled: adminEnabled() });
 });
 
+// Sidfotens logotyper. Alla inloggade kan läsa; endast superadmin ändrar.
+adminRouter.get("/api/footer", requireAuth, (_req, res) => {
+  res.json(getFooter());
+});
+adminRouter.post("/api/footer", requireAuth, express.json({ limit: "1mb" }), (req, res) => {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return;
+  }
+  res.json(saveFooter(req.body?.logos));
+});
+adminRouter.post("/api/footer/upload", requireAuth, express.json({ limit: "4mb" }), (req, res) => {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return;
+  }
+  try {
+    const src = saveUpload(req.body?.dataUrl, req.body?.name);
+    res.json({ ok: true, src });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 // Byt lösenord (endast superadmin). Lagras hashat i config/auth.json.
 adminRouter.post("/api/password", requireAuth, express.json(), (req, res) => {
   if (req.role !== "superadmin") {
@@ -355,6 +380,13 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   input[type=checkbox]{width:auto;transform:scale(1.3)}
   .num{width:90px}
   .num[type=time]{width:130px}
+  .flrow{display:flex;align-items:center;gap:.8rem;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .flprev{height:36px;width:auto;max-width:130px;background:#0e1a33;border-radius:5px;padding:3px 6px;object-fit:contain}
+  .flprev.inv{filter:brightness(0) invert(1)}
+  .flrow .flalt{flex:1;min-width:120px}
+  .flrow label{font-size:.85rem;color:#93a0bd;display:flex;align-items:center;gap:.35rem;white-space:nowrap}
+  .flrow label .num{width:64px}
+  .flmove button{padding:.15rem .55rem;font-size:1rem;line-height:1}
   button{border:0;border-radius:9px;padding:.55rem 1rem;font-weight:600;cursor:pointer;font-size:.9rem}
   .b-add{background:#243056;color:var(--tx)}
   .b-del{background:transparent;color:var(--red);border:1px solid var(--red);padding:.4rem .7rem}
@@ -435,9 +467,25 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
       </div>
     </div>
   </div>
+  <div id="footerSection" style="display:none;margin-top:2rem">
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Logotyper i sidfoten</h2>
+    <p class="hint">Välj vilka logotyper som visas i sidfoten och i vilken ordning (sortera med pilarna). Du ansvarar själv för att filens format/storlek passar designen – helst PNG eller SVG med transparent bakgrund. "Vit" färgar om en mörk logga till vit. Höjd styr hur stor den renderas.</p>
+    <div class="site">
+      <div id="footerList"></div>
+      <div class="top" style="margin-top:1rem;align-items:flex-end">
+        <div class="fld"><label>Ny logotyp (bildfil)</label><input id="fl_file" type="file" accept="image/*"></div>
+        <div class="fld"><label>Alt-text</label><input id="fl_alt" placeholder="t.ex. Företagsnamn"></div>
+        <button class="b-add" onclick="flAdd()">+ Lägg till logotyp</button>
+      </div>
+      <div class="bar" style="position:static;padding:1rem 0 0">
+        <button class="b-save" onclick="saveFooter()">Spara logotyper</button>
+        <span id="fl_msg"></span>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
-let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null;
+let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[];
 const $=id=>document.getElementById(id);
 function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;')}
 function show(v){ $('login').style.display=v==='login'?'block':'none'; $('app').style.display=v==='app'?'block':'none'; }
@@ -461,7 +509,8 @@ function startApp(){
   $('addSiteBtn').style.display=sup?'inline-block':'none';
   $('backupSection').style.display=sup?'block':'none';
   $('acctSection').style.display=sup?'block':'none';
-  if(sup) loadBackup();
+  $('footerSection').style.display=sup?'block':'none';
+  if(sup){ loadBackup(); loadFooter(); }
   load();
 }
 async function load(){
@@ -535,6 +584,44 @@ async function savePasswords(){
   }
   $('pw_admin').value='';$('pw_super').value='';
   m.className='msg ok';m.textContent='Lösenord uppdaterat';
+}
+async function loadFooter(){const d=await (await fetch('api/footer')).json();footerState=(d.logos||[]).map(l=>({src:l.src,alt:l.alt||'',invert:!!l.invert,height:l.height||44}));renderFooter();}
+function renderFooter(){
+  const c=$('footerList'); c.innerHTML='';
+  if(!footerState.length){c.innerHTML='<p class="hint">Inga logotyper – sidfoten visar ingen logga.</p>';return}
+  footerState.forEach((l,i)=>{
+    const row=document.createElement('div'); row.className='flrow';
+    row.innerHTML=\`<img class="flprev\${l.invert?' inv':''}" src="\${esc(l.src)}" alt="">
+      <input class="flalt" value="\${esc(l.alt)}" placeholder="Alt-text" oninput="flUpd(\${i},'alt',this.value)">
+      <label><input type="checkbox" \${l.invert?'checked':''} onchange="flUpd(\${i},'invert',this.checked)"> Vit</label>
+      <label>Höjd <input class="num" type="number" min="10" max="200" value="\${esc(l.height)}" oninput="flUpd(\${i},'height',this.value)"> px</label>
+      <span class="flmove"><button class="b-add" \${i===0?'disabled':''} onclick="flMove(\${i},-1)">↑</button><button class="b-add" \${i===footerState.length-1?'disabled':''} onclick="flMove(\${i},1)">↓</button></span>
+      <button class="b-del" onclick="flRemove(\${i})">Ta bort</button>\`;
+    c.appendChild(row);
+  });
+}
+function flUpd(i,f,v){footerState[i][f]=v; if(f==='invert')renderFooter();}
+function flMove(i,d){const j=i+d; if(j<0||j>=footerState.length)return; const t=footerState[i]; footerState[i]=footerState[j]; footerState[j]=t; renderFooter();}
+function flRemove(i){footerState.splice(i,1);renderFooter();}
+function flAdd(){
+  const f=$('fl_file').files[0]; const m=$('fl_msg');
+  if(!f){m.className='msg err';m.textContent='Välj en bildfil.';return}
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    m.className='';m.textContent='Laddar upp…';
+    const r=await fetch('api/footer/upload',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({dataUrl:rd.result,name:f.name})});
+    const d=await r.json();
+    if(r.ok){footerState.push({src:d.src,alt:$('fl_alt').value||f.name.split('.').slice(0,-1).join('.')||f.name,invert:false,height:44});$('fl_file').value='';$('fl_alt').value='';m.className='msg ok';m.textContent='Tillagd – glöm inte Spara logotyper.';renderFooter();}
+    else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
+  };
+  rd.readAsDataURL(f);
+}
+async function saveFooter(){
+  const m=$('fl_msg');m.className='';m.textContent='Sparar…';
+  const r=await fetch('api/footer',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({logos:footerState})});
+  const d=await r.json();
+  if(r.ok){m.className='msg ok';m.textContent='Sparat! Skärmen uppdateras inom några sekunder.';loadFooter();}
+  else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
 }
 init();
 </script></body></html>`;

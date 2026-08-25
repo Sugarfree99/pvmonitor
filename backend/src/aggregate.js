@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { getAllLatest, getHourlySince, hourBucket } from "./db.js";
+import { getFooter } from "./footer.js";
 
 const WH_PER_KWH = 1000;
 
@@ -80,7 +81,8 @@ export function buildSnapshot() {
     invertersTotal,
     allOnline: invertersOnline === invertersTotal,
     totals,
-    sites
+    sites,
+    footerLogos: getFooter().logos
   };
 }
 

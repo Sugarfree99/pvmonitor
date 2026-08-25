@@ -41,14 +41,16 @@ Skärmen roterar automatiskt mellan vyerna (~15 sekunder per vy):
 - Nuvarande timme markeras grön → man ser hur produktionen ändras över dagen.
 
 ### Vy 3+ – Per anläggning (t.ex. SOS, RSYD)
-En vy per anläggning med korten för varje omformare:
+En vy per anläggning med korten för varje omformare (en anläggning vars samtliga
+omformare är avaktiverade visas inte):
 - **Aktuell effekt** (kW) och kapacitetsstapel (andel av omformarens maxeffekt).
 - **Idag / I år / Totalt** samt omformarens minskade CO₂.
 - **Statuslysdiod:** grön = online, röd = offline/ingen aktuell data.
 
 ### Statusindikatorer (gäller alla vyer)
-- **Sidfot:** "Uppdaterad HH:MM:SS" + datum/klocka. Står klockslaget stilla är
-  datan gammal.
+- **Sidfot:** "Uppdaterad HH:MM:SS" + datum/klocka (står klockslaget stilla är
+  datan gammal). Sidfoten visar också Räddningstjänsten Syds sköld och
+  leverantörens logotyp (Bredbandskompetens).
 - **Gul banner:** "X av Y omformare offline" – backend når inte en eller flera
   omformare (den omformarens lysdiod blir röd, effekt visas som 0).
 - **Röd banner:** "Ingen kontakt med servern" – skärmen når inte backenden alls;
@@ -127,7 +129,8 @@ Webbaserat, nås från valfri dator på nätverket.
   - **admin** – redigera omformare: namn, modell, IP, port, unit-ID, kapacitet,
     slå i/ur drift, lägga till/ta bort omformare.
   - **superadmin** – allt admin kan **+** CO₂-faktor, lägga till/ta bort/döpa om
-    hela anläggningar, samt databasbackup-inställningar.
+    hela anläggningar, databasbackup-inställningar samt sidfotens logotyper
+    (välja, ladda upp, sortera ordning och storlek).
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
 - Att lägga till en anläggning skapar automatiskt en ny roterande vy på skärmen.
 - **Lösenord** byts direkt i admin (superadmin → *Konton & lösenord*) och lagras
@@ -179,9 +182,12 @@ felet pågår.
 ## 9. Fjärradministration & säkerhet
 
 - **SSH:** inloggning som `smartsource` med SSH-nyckel (root-inloggning avstängd).
-- **Systemadmin (uppdatera kod, OS-underhåll):** kräver root – via `su` med
-  root-lösenordet. Dagliga uppgifter (omformare, backup) sköts i admin­gränssnittet
-  och kräver ingen sudo.
+- **Uppdatera systemet (ny kod):**
+  `ssh smartsource@<ip> "sudo bash /opt/pvmonitor/deploy/update.sh"` – hämtar
+  senaste koden, bygger om frontenden och startar om tjänsterna. För att skärmen
+  ska visa nya bygget direkt: `ssh smartsource@<ip> "sudo pkill -f firefox"`
+  (kiosken öppnar webbläsaren igen automatiskt). Dagliga uppgifter (omformare,
+  backup, lösenord) sköts i admin­gränssnittet och kräver ingen SSH.
 - **Hemligheter:** inga lösenord lagras i klartext i appens config. Admin-lösenord
   ligger i `backend/.env` (gitignorerad); backup-serverns autentisering sker via
   SSH-nyckel.

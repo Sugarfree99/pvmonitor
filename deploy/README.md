@@ -132,28 +132,13 @@ mbpoll -t 4:float -r 173 -a 71 -p 1502 <omformarens-ip>
 
 ## Uppdatera efter installation (deploy)
 
-`/opt/pvmonitor` är en git-checkout, så uppdateringar hämtas med `git pull` och
-tjänsterna startas om. Eftersom passwordless sudo är borttaget körs en
-**engångsinstallation** som ger driftanvändaren (`smartsource`) rätt att köra
-**enbart** deploy-skriptet utan lösenord.
-
-**Engångsinstallation (kräver root-lösenordet en gång):**
+`/opt/pvmonitor` är en git-checkout, så uppdateringar hämtas med `git pull`,
+frontenden byggs om och tjänsterna startas om – det gör deploy-skriptet
+[`update.sh`](update.sh). Driftanvändaren `smartsource` har sudo-rättigheter, så
+en uppdatering körs direkt över SSH:
 
 ```bash
-su -c 'cd /opt/pvmonitor \
-  && git config --global --add safe.directory /opt/pvmonitor \
-  && git pull --ff-only \
-  && bash deploy/setup-deploy-sudo.sh smartsource \
-  && bash deploy/update.sh'
-```
-
-Detta hämtar senaste koden, installerar `/usr/local/sbin/pvmonitor-update`
-(root-ägt) samt en `sudoers.d`-regel, och kör en första driftsättning.
-
-**Därefter – varje uppdatering (inget lösenord):**
-
-```bash
-ssh smartsource@172.22.2.81 'sudo pvmonitor-update'
+ssh smartsource@172.22.2.81 "sudo bash /opt/pvmonitor/deploy/update.sh"
 ```
 
 Skriptet gör `git pull`, `npm install`, bygger frontenden, återställer ägarskap
@@ -161,8 +146,17 @@ till `kiosk` och startar om `pv-backend` + `pv-frontend`. Runtime-filer
 (`.env`, `config/auth.json`, `config/backup.json`, `data/`) rörs inte – de är
 git-ignorerade.
 
-> Ändras `deploy/update.sh` i repot, kör `setup-deploy-sudo.sh` igen för att
-> uppdatera den root-ägda kopian i `/usr/local/sbin/pvmonitor-update`.
+**Uppdatera skärmen direkt:** kioskens Firefox laddar inte om sig själv, så efter
+en frontend-ändring – starta om webbläsaren (autostart-loopen öppnar den igen med
+nya bygget):
+
+```bash
+ssh smartsource@172.22.2.81 "sudo pkill -f firefox"
+```
+
+> Vill man begränsa sudo till enbart deploy finns
+> [`setup-deploy-sudo.sh`](setup-deploy-sudo.sh), som installerar en root-ägd
+> `pvmonitor-update` och en `sudoers.d`-regel som bara tillåter det skriptet.
 
 ## Fjärrstyrning
 

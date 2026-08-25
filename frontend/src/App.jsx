@@ -146,8 +146,15 @@ export default function App() {
           </div>
         )}
         <div className="supplier">
-          <img className="supplier__rsyd" src="/rsyd-shield.png" alt="Räddningstjänsten Syd" />
-          <img className="supplier__logo" src="/bbk-logo.png" alt="Bredbandskompetens" />
+          {(data.footerLogos || []).map((logo, i) => (
+            <img
+              key={i}
+              className={`supplier__logo${logo.invert ? " supplier__logo--invert" : ""}`}
+              src={logo.src}
+              alt={logo.alt || ""}
+              style={logo.height ? { height: `${logo.height}px` } : undefined}
+            />
+          ))}
         </div>
         <Clock />
       </footer>

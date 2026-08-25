@@ -13,15 +13,18 @@ starta autonomt efter strömavbrott utan handpåläggning.
 | Skikt      | Teknik                         | Uppgift                                                       |
 | ---------- | ------------------------------ | ------------------------------------------------------------ |
 | Backend    | Node.js / Express              | Pollar KOSTAL via Modbus TCP, exponerar internt JSON-API.    |
-| Lagring    | SQLite (RAM-disk `/tmpfs`)     | Skriver var 10:e sek i RAM, synkas till disk 1 gång/min.     |
-| Frontend   | React (Vite SPA)               | Karusellvy som roterar mellan 3 vyer var 15:e sekund.        |
-| Kiosk      | Chromium + Openbox (Debian)    | Fullskärm utan menyer, muspekare eller felmeddelanden.       |
+| Lagring    | SQLite (RAM-disk)              | Pollar var 10:e sek i RAM, backas till disk var 15:e sek.    |
+| Frontend   | React (Vite SPA)               | Karusellvy som roterar mellan vyerna var 15:e sekund.        |
+| Kiosk      | Firefox ESR + Openbox (Debian) | Fullskärm utan menyer, muspekare eller felmeddelanden.       |
 
 ### Datavyer (karusell, 15 s rotation)
 
-1. **Huvudöversikt** — total effekt nu, energi idag (kWh), i år (MWh), totalt producerat, total minskad CO₂.
-2. **SOS** — de två KOSTAL CI 30 sida vid sida med individuella mätvärden.
-3. **RSYD** — den stora KOSTAL CI 100 separat.
+1. **Översikt** — total effekt nu, energi idag (kWh), i år (MWh), totalt producerat, total minskad CO₂.
+2. **Produktion idag** — stapeldiagram över producerad energi per timme under dygnet.
+3. **SOS** — de två KOSTAL CI 30 sida vid sida med individuella mätvärden.
+4. **RSYD** — den stora KOSTAL CI 100 separat.
+
+En anläggningsvy döljs automatiskt om alla dess omformare är avaktiverade.
 
 ## Projektstruktur
 
@@ -36,7 +39,7 @@ PV_Monitor/
 ├── frontend/           React (Vite) kiosk-SPA
 │   └── src/
 ├── deploy/             Debian-installation (systemd, openbox, lightdm)
-└── docs/               MODBUS.md (registerkarta), SECURITY.md (hemligheter)
+└── docs/               MANUAL.md (system-/driftmanual), MODBUS.md (registerkarta), SECURITY.md
 ```
 
 ## Lokal utveckling
