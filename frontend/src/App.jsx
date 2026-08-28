@@ -104,6 +104,7 @@ export default function App() {
           key="logoslide"
           title={data.imageSlide.title}
           images={data.imageSlide.images}
+          backdrop={data.imageSlide.backdrop}
         />
       );
     }

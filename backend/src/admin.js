@@ -526,6 +526,12 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
         <div class="fld"><label>Visa bildsidan</label><input id="sl_en" type="checkbox"></div>
         <div class="fld" style="flex:1"><label>Rubrik</label><input id="sl_title" placeholder="t.ex. Våra samarbetspartners"></div>
       </div>
+      <div class="top" style="margin-top:.6rem">
+        <div class="fld" style="flex:1">
+          <label>Bakgrundston bakom bilderna (tonar mjukt ut mot sidorna – hjälper mörka bilder att synas)</label>
+          <div id="sl_bd" style="display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.3rem"></div>
+        </div>
+      </div>
       <div id="slideList" style="margin-top:.5rem"></div>
       <div class="top" style="margin-top:1rem;align-items:flex-end">
         <div class="fld"><label>Ny bild</label><input id="sl_file" type="file" accept="image/*"></div>
@@ -550,7 +556,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   </div>
 </div>
 <script>
-let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[]; let slideState={enabled:false,title:'',images:[]};
+let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[]; let slideState={enabled:false,title:'',backdrop:'',images:[]};
 const $=id=>document.getElementById(id);
 function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;')}
 function show(v){ $('login').style.display=v==='login'?'block':'none'; $('app').style.display=v==='app'?'block':'none'; }
@@ -692,7 +698,28 @@ async function saveFooter(){
   if(r.ok){m.className='msg ok';m.textContent='Sparat! Skärmen uppdateras inom några sekunder.';loadFooter();}
   else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
 }
-async function loadSlides(){const d=await (await fetch('api/slides')).json();slideState={enabled:!!d.enabled,title:d.title||'',images:(d.images||[]).map(l=>({src:l.src,alt:l.alt||'',invert:!!l.invert,height:l.height||240}))};$('sl_en').checked=slideState.enabled;$('sl_title').value=slideState.title;renderSlides();}
+async function loadSlides(){const d=await (await fetch('api/slides')).json();slideState={enabled:!!d.enabled,title:d.title||'',backdrop:d.backdrop||'',images:(d.images||[]).map(l=>({src:l.src,alt:l.alt||'',invert:!!l.invert,height:l.height||240}))};$('sl_en').checked=slideState.enabled;$('sl_title').value=slideState.title;renderBackdrop();renderSlides();}
+const BD_PALETTE=['#ffffff','#eaf1f8','#d7e3f0','#c9d6e5','#f3ead8','#ffd27f','#8fc0ec','#1b2a4a'];
+function renderBackdrop(){
+  const c=$('sl_bd'); c.innerHTML='';
+  const cur=(slideState.backdrop||'').toLowerCase();
+  const mk=(color,label)=>{
+    const sel=cur===(color||'').toLowerCase();
+    const b=document.createElement('button'); b.type='button'; b.title=label||color;
+    b.style.cssText='width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid '+(sel?'#fff':'rgba(255,255,255,.25)')+';box-shadow:'+(sel?'0 0 0 2px rgba(255,255,255,.35)':'none')+';'+(color?('background:'+color):'background:transparent;color:#fff;font-size:1rem;line-height:1');
+    if(!color)b.textContent='✕';
+    b.onclick=()=>{slideState.backdrop=color;renderBackdrop();};
+    c.appendChild(b);
+  };
+  mk('','Ingen bakgrund');
+  BD_PALETTE.forEach(col=>mk(col));
+  const wrap=document.createElement('label'); wrap.title='Egen färg'; wrap.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:2px dashed rgba(255,255,255,.3);cursor:pointer;overflow:hidden';
+  const inp=document.createElement('input'); inp.type='color'; inp.value=/^#[0-9a-f]{6}$/i.test(slideState.backdrop)?slideState.backdrop:'#ffffff'; inp.style.cssText='width:40px;height:40px;border:0;background:transparent;cursor:pointer;padding:0';
+  inp.onchange=()=>{slideState.backdrop=inp.value.toLowerCase();renderBackdrop();};
+  wrap.appendChild(inp); c.appendChild(wrap);
+  const prev=document.createElement('span'); prev.title='Förhandsvisning'; prev.style.cssText='margin-left:.5rem;display:inline-block;width:150px;height:40px;border-radius:8px;border:1px dashed rgba(255,255,255,.2);background:#0f1b33 '+(slideState.backdrop?('radial-gradient(closest-side, '+slideState.backdrop+' 0%, transparent 100%)'):'none');
+  c.appendChild(prev);
+}
 function renderSlides(){
   const c=$('slideList'); c.innerHTML='';
   if(!slideState.images.length){c.innerHTML='<p class="hint">Inga bilder tillagda än.</p>';return}

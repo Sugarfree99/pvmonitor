@@ -50,7 +50,9 @@ omformare är avaktiverade visas inte):
 ### Vy – Bildsida (valfri)
 En extra sida som kan aktiveras i admin: en rubrik och en eller flera bilder
 (t.ex. samarbetspartners/logotyper) centrerat, i samma mall som övriga vyer
-(utan diagram).
+(utan diagram). Kan vara vilken text/bild som helst. För bilder som smälter in
+mot den mörka bakgrunden kan man välja en **bakgrundston** (från en färgpalett
+eller egen färg) som tonar mjukt ut bakom varje bild och lyfter fram den.
 ### Statusindikatorer (gäller alla vyer)
 - **Sidfot:** "Uppdaterad HH:MM:SS" + datum/klocka (står klockslaget stilla är
   datan gammal). Sidfoten visar också Räddningstjänsten Syds sköld och
@@ -135,7 +137,8 @@ Webbaserat, nås från valfri dator på nätverket.
   - **superadmin** – allt admin kan **+** CO₂-faktor, lägga till/ta bort/döpa om
     hela anläggningar, databasbackup-inställningar, sidfotens logotyper
     (välja, ladda upp, sortera ordning och storlek), en valfri **bildsida**
-    (rubrik + logotyper) samt **nollställa produktionshistoriken** (rensa t.ex.
+    (rubrik + bilder, med valbar bakgrundston) samt **nollställa
+    produktionshistoriken** (rensa t.ex.
     simulerad testdata).
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
 - **Visningstid per vy** (sekunder) ställs in i admin och styr karusellens rotation.
