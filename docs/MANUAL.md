@@ -129,8 +129,9 @@ Webbaserat, nås från valfri dator på nätverket.
   - **admin** – redigera omformare: namn, modell, IP, port, unit-ID, kapacitet,
     slå i/ur drift, lägga till/ta bort omformare.
   - **superadmin** – allt admin kan **+** CO₂-faktor, lägga till/ta bort/döpa om
-    hela anläggningar, databasbackup-inställningar samt sidfotens logotyper
-    (välja, ladda upp, sortera ordning och storlek).
+    hela anläggningar, databasbackup-inställningar, sidfotens logotyper
+    (välja, ladda upp, sortera ordning och storlek) samt **nollställa
+    produktionshistoriken** (rensa t.ex. simulerad testdata).
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
 - **Visningstid per vy** (sekunder) ställs in i admin och styr karusellens rotation.
 - Att lägga till en anläggning skapar automatiskt en ny roterande vy på skärmen.
@@ -209,11 +210,14 @@ När de riktiga omformarna kopplas in – gå från test till skarp drift:
 4. **Peka mot riktig config:** ta bort raden `INVERTERS_CONFIG=...sim.json` ur
    `backend/.env` (så att `config/inverters.json` används) och
    `sudo systemctl restart pv-backend`.
-5. **Byt admin-lösenord** (admin → Konton & lösenord, eller i `.env`).
-6. **Kontrollera backup:** att extern backup är aktiverad och att "Kör backup nu"
+5. **Nollställ produktionshistoriken** i admin (superadmin → *Nollställ
+   produktionshistorik* → *Nollställ nu*) så att simulerad testdata inte ligger
+   kvar i timdiagrammet.
+6. **Byt admin-lösenord** (admin → Konton & lösenord, eller i `.env`).
+7. **Kontrollera backup:** att extern backup är aktiverad och att "Kör backup nu"
    lyckas.
-7. **Verifiera skärmen:** alla omformare online (gröna prickar), inga banners.
-8. **BIOS:** bekräfta Restore AC Power Loss = Power On.
+8. **Verifiera skärmen:** alla omformare online (gröna prickar), inga banners.
+9. **BIOS:** bekräfta Restore AC Power Loss = Power On.
 
 > Simulatorn är enbart ett teststeg innan riktiga omformare finns – den ska inte
 > vara igång i skarp drift.

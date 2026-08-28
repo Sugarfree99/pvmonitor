@@ -125,4 +125,14 @@ export function backupTo(targetPath) {
   return db.backup(targetPath);
 }
 
+const resetHourlyStmt = db.prepare(`DELETE FROM hourly`);
+const resetLatestStmt = db.prepare(`DELETE FROM latest`);
+
+// Nollställer systemets egen data: produktionshistorik (timdiagram) och
+// senaste-cache. Omformarnas energitotaler läses åter in vid nästa pollning.
+export function resetHistory({ clearLatest = true } = {}) {
+  resetHourlyStmt.run();
+  if (clearLatest) resetLatestStmt.run();
+}
+
 export default db;

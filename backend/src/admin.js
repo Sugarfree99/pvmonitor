@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { config, reloadConfig } from "./config.js";
 import { getBackupSettings, updateBackupSettings, runBackupNow } from "./backup.js";
 import { getFooter, saveFooter, saveUpload } from "./footer.js";
+import { resetHistory, backupTo } from "./db.js";
 
 export const adminRouter = express.Router();
 
@@ -256,6 +257,23 @@ adminRouter.post("/api/footer/upload", requireAuth, express.json({ limit: "4mb" 
   }
 });
 
+// Nollställ systemets produktionshistorik + cache (endast superadmin).
+adminRouter.post("/api/reset", requireAuth, express.json(), (req, res) => {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return;
+  }
+  try {
+    resetHistory({ clearLatest: true });
+    // Skriv den nollställda databasen till disk-backupen så den inte återläses
+    // vid omstart.
+    if (config.dbBackupPath) backupTo(config.dbBackupPath).catch(() => {});
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Byt lösenord (endast superadmin). Lagras hashat i config/auth.json.
 adminRouter.post("/api/password", requireAuth, express.json(), (req, res) => {
   if (req.role !== "superadmin") {
@@ -487,6 +505,16 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
       </div>
     </div>
   </div>
+  <div id="resetSection" style="display:none;margin-top:2rem">
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Nollställ produktionshistorik</h2>
+    <p class="hint">Rensar systemets egna data: timdiagrammets historik och senaste-cachen – t.ex. för att bli av med simulerad testdata vid driftsättning. Omformarnas energitotaler (idag/i år/totalt) påverkas inte, de läses in på nytt från omformarna. Kan inte ångras.</p>
+    <div class="site">
+      <div class="bar" style="position:static;padding:.2rem 0 0">
+        <button class="b-del" onclick="resetDb()">Nollställ nu</button>
+        <span id="rs_msg"></span>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[];
@@ -514,6 +542,7 @@ function startApp(){
   $('backupSection').style.display=sup?'block':'none';
   $('acctSection').style.display=sup?'block':'none';
   $('footerSection').style.display=sup?'block':'none';
+  $('resetSection').style.display=sup?'block':'none';
   if(sup){ loadBackup(); loadFooter(); }
   load();
 }
@@ -627,6 +656,14 @@ async function saveFooter(){
   const r=await fetch('api/footer',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({logos:footerState})});
   const d=await r.json();
   if(r.ok){m.className='msg ok';m.textContent='Sparat! Skärmen uppdateras inom några sekunder.';loadFooter();}
+  else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
+}
+async function resetDb(){
+  if(!confirm('Nollställa produktionshistoriken? Detta rensar timdiagram och cache och kan inte ångras.'))return;
+  const m=$('rs_msg');m.className='';m.textContent='Nollställer…';
+  const r=await fetch('api/reset',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+  const d=await r.json();
+  if(r.ok){m.className='msg ok';m.textContent='Klart – produktionshistoriken är nollställd.';}
   else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
 }
 init();
