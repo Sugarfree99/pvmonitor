@@ -22,10 +22,14 @@
   .frame { background: #0c1622; padding: 12px; }
   .frame img { display: block; width: 100%; height: auto; border-radius: 6px; }
   @media print {
-    body { background: #fff; }
-    figure { break-inside: avoid; border: none; }
+    body { background: #fff; padding: 0; }
+    @page { margin: 8mm; }
+    header { padding: 10mm 10mm 0; break-after: avoid; }
+    main { max-width: none; padding: 0; }
+    figure { break-inside: avoid; break-before: page; margin: 0; border: none; }
+    figure:first-of-type { break-before: avoid; }
     figcaption { break-after: avoid; }
-    .frame img { width: auto; height: auto; max-width: 100%; max-height: 235mm; margin: 0 auto; }
+    .frame img { width: auto; height: auto; max-width: 100%; max-height: 225mm; margin: 0 auto; }
   }
 </style>
 </head>
