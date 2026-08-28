@@ -4,6 +4,7 @@ import { useHistory } from "./hooks/useHistory.js";
 import OverviewView from "./components/OverviewView.jsx";
 import ProductionView from "./components/ProductionView.jsx";
 import SiteView from "./components/SiteView.jsx";
+import LogoSlide from "./components/LogoSlide.jsx";
 
 const DEFAULT_ROTATE_SECONDS = 15;
 
@@ -89,6 +90,20 @@ export default function App() {
           site={site}
           co2Factor={data.co2FactorKgPerKwh}
           stale={stale}
+        />
+      );
+    }
+    // Valfri extra bildsida (rubrik + logotyper), styrs från admin.
+    if (
+      data.imageSlide &&
+      data.imageSlide.enabled &&
+      (data.imageSlide.images || []).length
+    ) {
+      views.push(
+        <LogoSlide
+          key="logoslide"
+          title={data.imageSlide.title}
+          images={data.imageSlide.images}
         />
       );
     }

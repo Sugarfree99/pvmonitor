@@ -47,6 +47,10 @@ omformare är avaktiverade visas inte):
 - **Idag / I år / Totalt** samt omformarens minskade CO₂.
 - **Statuslysdiod:** grön = online, röd = offline/ingen aktuell data.
 
+### Vy – Bildsida (valfri)
+En extra sida som kan aktiveras i admin: en rubrik och en eller flera bilder
+(t.ex. samarbetspartners/logotyper) centrerat, i samma mall som övriga vyer
+(utan diagram).
 ### Statusindikatorer (gäller alla vyer)
 - **Sidfot:** "Uppdaterad HH:MM:SS" + datum/klocka (står klockslaget stilla är
   datan gammal). Sidfoten visar också Räddningstjänsten Syds sköld och
@@ -130,8 +134,9 @@ Webbaserat, nås från valfri dator på nätverket.
     slå i/ur drift, lägga till/ta bort omformare.
   - **superadmin** – allt admin kan **+** CO₂-faktor, lägga till/ta bort/döpa om
     hela anläggningar, databasbackup-inställningar, sidfotens logotyper
-    (välja, ladda upp, sortera ordning och storlek) samt **nollställa
-    produktionshistoriken** (rensa t.ex. simulerad testdata).
+    (välja, ladda upp, sortera ordning och storlek), en valfri **bildsida**
+    (rubrik + logotyper) samt **nollställa produktionshistoriken** (rensa t.ex.
+    simulerad testdata).
 - **Ändringar tillämpas live** inom några sekunder (ingen omstart krävs).
 - **Visningstid per vy** (sekunder) ställs in i admin och styr karusellens rotation.
 - Att lägga till en anläggning skapar automatiskt en ny roterande vy på skärmen.

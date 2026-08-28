@@ -7,6 +7,7 @@ import { config, reloadConfig } from "./config.js";
 import { getBackupSettings, updateBackupSettings, runBackupNow } from "./backup.js";
 import { getFooter, saveFooter, saveUpload } from "./footer.js";
 import { resetHistory, backupTo } from "./db.js";
+import { getSlides, saveSlides } from "./slides.js";
 
 export const adminRouter = express.Router();
 
@@ -274,6 +275,18 @@ adminRouter.post("/api/reset", requireAuth, express.json(), (req, res) => {
   }
 });
 
+// Bildsidan i karusellen (endast superadmin ändrar).
+adminRouter.get("/api/slides", requireAuth, (_req, res) => {
+  res.json(getSlides());
+});
+adminRouter.post("/api/slides", requireAuth, express.json({ limit: "1mb" }), (req, res) => {
+  if (req.role !== "superadmin") {
+    res.status(403).json({ error: "Kräver superadmin" });
+    return;
+  }
+  res.json(saveSlides(req.body));
+});
+
 // Byt lösenord (endast superadmin). Lagras hashat i config/auth.json.
 adminRouter.post("/api/password", requireAuth, express.json(), (req, res) => {
   if (req.role !== "superadmin") {
@@ -505,6 +518,26 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
       </div>
     </div>
   </div>
+  <div id="slideSection" style="display:none;margin-top:2rem">
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Bildsida (logotyper/partners)</h2>
+    <p class="hint">En extra sida i karusellen med en rubrik och en eller flera bilder centrerat (t.ex. samarbetspartners) – samma mall som övriga sidor, utan diagram. Aktivera, sätt rubrik och lägg till bilder. Använd transparent PNG/SVG för bäst resultat.</p>
+    <div class="site">
+      <div class="top">
+        <div class="fld"><label>Visa bildsidan</label><input id="sl_en" type="checkbox"></div>
+        <div class="fld" style="flex:1"><label>Rubrik</label><input id="sl_title" placeholder="t.ex. Våra samarbetspartners"></div>
+      </div>
+      <div id="slideList" style="margin-top:.5rem"></div>
+      <div class="top" style="margin-top:1rem;align-items:flex-end">
+        <div class="fld"><label>Ny bild</label><input id="sl_file" type="file" accept="image/*"></div>
+        <div class="fld"><label>Alt-text</label><input id="sl_alt" placeholder="t.ex. Företagsnamn"></div>
+        <button class="b-add" onclick="slAdd()">+ Lägg till bild</button>
+      </div>
+      <div class="bar" style="position:static;padding:1rem 0 0">
+        <button class="b-save" onclick="saveSlides()">Spara bildsida</button>
+        <span id="sl_msg"></span>
+      </div>
+    </div>
+  </div>
   <div id="resetSection" style="display:none;margin-top:2rem">
     <h2 style="font-size:1.2rem;margin-bottom:.2rem">Nollställ produktionshistorik</h2>
     <p class="hint">Rensar systemets egna data: timdiagrammets historik och senaste-cachen – t.ex. för att bli av med simulerad testdata vid driftsättning. Omformarnas energitotaler (idag/i år/totalt) påverkas inte, de läses in på nytt från omformarna. Kan inte ångras.</p>
@@ -517,7 +550,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
   </div>
 </div>
 <script>
-let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[];
+let state={co2FactorKgPerKwh:0.4,sites:[]}; let role=null; let footerState=[]; let slideState={enabled:false,title:'',images:[]};
 const $=id=>document.getElementById(id);
 function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;')}
 function show(v){ $('login').style.display=v==='login'?'block':'none'; $('app').style.display=v==='app'?'block':'none'; }
@@ -542,8 +575,9 @@ function startApp(){
   $('backupSection').style.display=sup?'block':'none';
   $('acctSection').style.display=sup?'block':'none';
   $('footerSection').style.display=sup?'block':'none';
+  $('slideSection').style.display=sup?'block':'none';
   $('resetSection').style.display=sup?'block':'none';
-  if(sup){ loadBackup(); loadFooter(); }
+  if(sup){ loadBackup(); loadFooter(); loadSlides(); }
   load();
 }
 async function load(){
@@ -656,6 +690,45 @@ async function saveFooter(){
   const r=await fetch('api/footer',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({logos:footerState})});
   const d=await r.json();
   if(r.ok){m.className='msg ok';m.textContent='Sparat! Skärmen uppdateras inom några sekunder.';loadFooter();}
+  else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
+}
+async function loadSlides(){const d=await (await fetch('api/slides')).json();slideState={enabled:!!d.enabled,title:d.title||'',images:(d.images||[]).map(l=>({src:l.src,alt:l.alt||'',invert:!!l.invert,height:l.height||240}))};$('sl_en').checked=slideState.enabled;$('sl_title').value=slideState.title;renderSlides();}
+function renderSlides(){
+  const c=$('slideList'); c.innerHTML='';
+  if(!slideState.images.length){c.innerHTML='<p class="hint">Inga bilder tillagda än.</p>';return}
+  slideState.images.forEach((l,i)=>{
+    const row=document.createElement('div'); row.className='flrow';
+    row.innerHTML=\`<img class="flprev\${l.invert?' inv':''}" src="\${esc(l.src)}" alt="">
+      <input class="flalt" value="\${esc(l.alt)}" placeholder="Alt-text" oninput="slUpd(\${i},'alt',this.value)">
+      <label><input type="checkbox" \${l.invert?'checked':''} onchange="slUpd(\${i},'invert',this.checked)"> Vit</label>
+      <label>Höjd <input class="num" type="number" min="20" max="800" value="\${esc(l.height)}" oninput="slUpd(\${i},'height',this.value)"> px</label>
+      <span class="flmove"><button class="b-add" \${i===0?'disabled':''} onclick="slMove(\${i},-1)">↑</button><button class="b-add" \${i===slideState.images.length-1?'disabled':''} onclick="slMove(\${i},1)">↓</button></span>
+      <button class="b-del" onclick="slRemove(\${i})">Ta bort</button>\`;
+    c.appendChild(row);
+  });
+}
+function slUpd(i,f,v){slideState.images[i][f]=v; if(f==='invert')renderSlides();}
+function slMove(i,d){const j=i+d; if(j<0||j>=slideState.images.length)return; const t=slideState.images[i]; slideState.images[i]=slideState.images[j]; slideState.images[j]=t; renderSlides();}
+function slRemove(i){slideState.images.splice(i,1);renderSlides();}
+function slAdd(){
+  const f=$('sl_file').files[0]; const m=$('sl_msg');
+  if(!f){m.className='msg err';m.textContent='Välj en bildfil.';return}
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    m.className='';m.textContent='Laddar upp…';
+    const r=await fetch('api/footer/upload',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({dataUrl:rd.result,name:f.name})});
+    const d=await r.json();
+    if(r.ok){slideState.images.push({src:d.src,alt:$('sl_alt').value||f.name.split('.').slice(0,-1).join('.')||f.name,invert:false,height:240});$('sl_file').value='';$('sl_alt').value='';m.className='msg ok';m.textContent='Tillagd – glöm inte Spara bildsida.';renderSlides();}
+    else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
+  };
+  rd.readAsDataURL(f);
+}
+async function saveSlides(){
+  const m=$('sl_msg');m.className='';m.textContent='Sparar…';
+  slideState.enabled=$('sl_en').checked; slideState.title=$('sl_title').value;
+  const r=await fetch('api/slides',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(slideState)});
+  const d=await r.json();
+  if(r.ok){m.className='msg ok';m.textContent='Sparat! Skärmen uppdateras inom några sekunder.';loadSlides();}
   else{m.className='msg err';m.textContent='Fel: '+(d.error||r.status)}
 }
 async function resetDb(){

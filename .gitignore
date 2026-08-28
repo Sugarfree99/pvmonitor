@@ -26,6 +26,9 @@ backend/config/auth.json
 # Sidfotens logotyp-konfiguration (per miljö)
 backend/config/footer.json
 
+# Bildsidans konfiguration (per miljö)
+backend/config/slides.json
+
 # Logs
 *.log
 npm-debug.log*
