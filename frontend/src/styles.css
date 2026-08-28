@@ -28,8 +28,7 @@ body,
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   color: var(--text);
-  background: radial-gradient(1200px 800px at 70% -10%, #1b2c55 0%, var(--bg-0) 55%),
-    var(--bg-0);
+  background: var(--bg-0);
   overflow: hidden;
   cursor: none;
   -webkit-font-smoothing: antialiased;
