@@ -23,7 +23,8 @@
   .frame img { display: block; width: 100%; height: auto; border-radius: 6px; }
   @media print {
     body { background: #fff; }
-    figure { break-inside: avoid; border: none; }
+    figure { break-inside: auto; border: none; }
+    figcaption { break-after: avoid; }
   }
 </style>
 </head>
