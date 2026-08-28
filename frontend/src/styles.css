@@ -510,12 +510,6 @@ body {
 }
 
 /* ---------- Bildsida (logotyper/partners) ---------- */
-.view--logos .view__header {
-  justify-content: center;
-}
-.view--logos .view__title {
-  text-align: center;
-}
 .logo-slide {
   flex: 1;
   display: flex;

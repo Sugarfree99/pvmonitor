@@ -519,7 +519,7 @@ const ADMIN_HTML = `<!doctype html><html lang="sv"><head><meta charset="utf-8">
     </div>
   </div>
   <div id="slideSection" style="display:none;margin-top:2rem">
-    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Bildsida (logotyper/partners)</h2>
+    <h2 style="font-size:1.2rem;margin-bottom:.2rem">Bildsida</h2>
     <p class="hint">En extra sida i karusellen med en rubrik och en eller flera bilder centrerat (t.ex. samarbetspartners) – samma mall som övriga sidor, utan diagram. Aktivera, sätt rubrik och lägg till bilder. Använd transparent PNG/SVG för bäst resultat.</p>
     <div class="site">
       <div class="top">
