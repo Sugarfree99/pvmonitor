@@ -123,6 +123,23 @@ export default function App() {
     return () => clearInterval(timer);
   }, [views.length, rotateMs]);
 
+  // Pixel-shift (orbiter): förskjuter hela gränssnittet några pixlar i en långsam
+  // slinga så att statiska element (prickar, klocka, sidfot) inte ligger kvar på
+  // exakt samma pixlar – motverkar inbränning på skärmar som är på dygnet runt.
+  const [shift, setShift] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const orbit = [
+      [-6, -3], [-3, -6], [3, -6], [6, -3],
+      [6, 3], [3, 6], [-3, 6], [-6, 3]
+    ];
+    let i = 0;
+    const timer = setInterval(() => {
+      i = (i + 1) % orbit.length;
+      setShift({ x: orbit[i][0], y: orbit[i][1] });
+    }, 45000);
+    return () => clearInterval(timer);
+  }, []);
+
   if (!data) {
     return (
       <div className="app app--loading">
@@ -135,7 +152,10 @@ export default function App() {
   const safeIndex = index % views.length;
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={{ transform: `translate(${shift.x}px, ${shift.y}px)` }}
+    >
       {status && (
         <div className={`top-banner top-banner--${status.level}`}>
           <span className="top-banner__dot" />

@@ -38,6 +38,9 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Pixel-shift glider mjukt mellan positionerna (motverkar inbränning) */
+  transition: transform 3s ease-in-out;
+  will-change: transform;
 }
 
 /* ---------- Statusbanner (syns bara vid problem) ---------- */

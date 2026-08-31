@@ -157,6 +157,10 @@ Webbaserat, nås från valfri dator på nätverket.
 - **Kiosk:** LightDM autologin → Openbox → Firefox ESR i fullskärm mot
   `http://localhost:5173`. Skärmsläckare/energisparläge och muspekare är avstängda;
   inga popups eller felrutor visas.
+- **Inbränningsskydd (pixel-shift):** hela gränssnittet förskjuts några pixlar i en
+  långsam slinga så att statiska element (pagineringsprickar, klocka, sidfot) inte
+  ligger kvar på exakt samma pixlar. Tillsammans med den roterande vyn motverkar
+  det inbränning på skärmar som är på dygnet runt.
 - **Efter strömavbrott:** BIOS (Restore AC Power Loss = Power On) startar datorn,
   systemd startar tjänsterna, och en hårdvaru-watchdog startar om vid frysning.
 - **Webbläsarval:** Firefox ESR
