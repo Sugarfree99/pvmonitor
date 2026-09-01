@@ -47,6 +47,10 @@ omformare är avaktiverade visas inte):
 - **Idag / I år / Totalt** samt omformarens minskade CO₂.
 - **Statuslysdiod:** grön = online, röd = offline/ingen aktuell data.
 
+Korten ligger på en rad och krymper automatiskt så att alla omformare i
+anläggningen får plats på skärmen. Ju fler omformare, desto mindre kort – lägg
+därför inte till fler än att de fortfarande går att läsa av på skärmen.
+
 ### Vy – Bildsida (valfri)
 En extra sida som kan aktiveras i admin: en rubrik och en eller flera bilder
 (t.ex. samarbetspartners/logotyper) centrerat, i samma mall som övriga vyer

@@ -8,6 +8,11 @@ export default function SiteView({ site, co2Factor, stale = false }) {
   const power = formatPower(site.powerW);
   const today = formatEnergyKwh(site.energyTodayWh);
   const count = site.inverters.length;
+  const single = count <= 1;
+  // Alla omformare på en rad – de krymper så att de får plats i containern.
+  const rowStyle = single
+    ? undefined
+    : { gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` };
 
   return (
     <section className="view view--site">
@@ -24,7 +29,7 @@ export default function SiteView({ site, co2Factor, stale = false }) {
         </div>
       </header>
 
-      <div className={`inv-row inv-row--${count > 1 ? "multi" : "single"}`}>
+      <div className={`inv-row inv-row--${single ? "single" : "multi"}`} style={rowStyle}>
         {site.inverters.map((inv) => (
           <InverterCard
             key={inv.id}
