@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PV Monitor – Inloggning &amp; administration</title>
+<style>
+  :root {
+    --ink: #1b2430;
+    --muted: #5b6b7b;
+    --line: #e3e8ee;
+    --brand: #0c66c2;
+    --brand-dark: #0c1622;
+    --accent: #eef4fb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    color: var(--ink); background: #f4f6f9; line-height: 1.5;
+  }
+  main { max-width: 900px; margin: 0 auto; padding: 0 26px 60px; }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(160deg, #0c1622 0%, #123a63 100%);
+    color: #fff; padding: 60px 26px 48px; text-align: center;
+  }
+  .cover .kicker { text-transform: uppercase; letter-spacing: 2px; font-size: 13px; color: #9dc4ea; margin: 0 0 14px; }
+  .cover h1 { margin: 0 0 10px; font-size: 34px; }
+  .cover p { margin: 0; color: #c7d6e6; font-size: 16px; }
+
+  h2 {
+    font-size: 21px; margin: 34px 0 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--brand-dark);
+  }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  p, li { font-size: 14.5px; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--accent); padding: 1px 6px; border-radius: 4px;
+    font-family: "Cascadia Code", Consolas, monospace; font-size: 13px; color: #123a63;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 9px 12px; border: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+  th { background: var(--accent); }
+
+  .card {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 16px 0;
+  }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 8px 0; }
+  .steps > li {
+    position: relative; padding: 4px 0 14px 42px; margin: 0;
+  }
+  .steps > li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: 2px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand); color: #fff; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .note {
+    background: var(--accent); border-left: 4px solid var(--brand);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 14px;
+  }
+  .warn {
+    background: #fff8e6; border-left: 4px solid #e0a400;
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 14px;
+  }
+
+  .shot { margin: 14px 0 4px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .shot .frame { background: var(--brand-dark); padding: 12px; }
+  .shot img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  .shot figcaption { padding: 8px 14px; font-size: 13px; color: var(--muted); }
+
+  .role-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+  .role-admin { background: #e3f0ff; color: #0c66c2; }
+  .role-super { background: #ffe8d6; color: #b4530a; }
+
+  .toc { columns: 2; column-gap: 40px; font-size: 14px; }
+  .toc a { color: var(--brand); text-decoration: none; }
+
+  footer.doc { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+
+  @media print {
+    body { background: #fff; }
+    @page { margin: 14mm; }
+    main { max-width: none; padding: 0; }
+    .cover { margin: -14mm -14mm 0; padding: 40mm 20mm; }
+    h2 { break-before: page; break-after: avoid; }
+    h2.no-break { break-before: avoid; }
+    h3, figcaption { break-after: avoid; }
+    .card, .shot, table, .note, .warn, .steps > li { break-inside: avoid; }
+    .toc a { color: var(--ink); }
+    .noprint { display: none !important; }
+  }
+
+  .printbar {
+    position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line);
+    padding: 10px 26px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .printbar button {
+    background: var(--brand); color: #fff; border: 0; border-radius: 8px;
+    padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .printbar span { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="printbar noprint">
+  <span>Tips: skriv ut till PDF via <strong>Ctrl&nbsp;+&nbsp;P</strong> → “Spara som PDF”.</span>
+  <button onclick="window.print()">Skriv ut / Spara som PDF</button>
+</div>
+
+<div class="cover">
+  <p class="kicker">PV Monitor · Solproduktionsövervakning</p>
+  <h1>Inloggning &amp; administration</h1>
+  <p>Handbok för att logga in och sköta systemet</p>
+</div>
+
+<main>
+
+  <h2 class="no-break">Innehåll</h2>
+  <div class="toc">
+    <p>1. Så loggar du in<br>
+       2. Roller och behörighet<br>
+       3. Adminvyn – hantera omformare<br>
+       4. Superadmin – anläggningar &amp; inställningar<br>
+       5. Byta lösenord<br>
+       6. Vanliga frågor &amp; felsökning</p>
+  </div>
+
+  <!-- 1 -->
+  <h2>1. Så loggar du in</h2>
+  <div class="card">
+    <p>Administrationen är webbaserad och nås från valfri dator eller surfplatta som
+    är ansluten till samma nätverk som skärmen.</p>
+    <ol class="steps">
+      <li>Öppna en webbläsare på en dator i nätverket.</li>
+      <li>Gå till adressen <code>http://&lt;skärmens-IP&gt;:3000/admin</code>.<br>
+          <span style="color:var(--muted)">Byt <code>&lt;skärmens-IP&gt;</code> mot skärmdatorns IP-adress
+          (finns hos er nätverksansvarige).</span></li>
+      <li>Skriv in <strong>användarnamn</strong> och <strong>lösenord</strong> och välj <strong>Logga in</strong>.</li>
+    </ol>
+  </div>
+
+  <figure class="shot">
+    <div class="frame"><img src="screenshots/admin3-login.png" alt="Inloggningsruta"></div>
+    <figcaption>Inloggningsvyn.</figcaption>
+  </figure>
+
+  <div class="note">
+    Du förblir inloggad en tid via en cookie i webbläsaren. Använd <strong>Logga ut</strong>
+    när du är klar, särskilt på en delad dator.
+  </div>
+
+  <!-- 2 -->
+  <h2>2. Roller och behörighet</h2>
+  <p>Det finns två roller. Använd den som motsvarar det du behöver göra.</p>
+  <table>
+    <tr><th>Roll</th><th>Kan göra</th></tr>
+    <tr>
+      <td><span class="role-pill role-admin">admin</span></td>
+      <td>Hantera omformare: namn, modell, IP-adress, port, unit-ID och kapacitet.
+          Slå omformare i eller ur drift samt lägga till och ta bort omformare.</td>
+    </tr>
+    <tr>
+      <td><span class="role-pill role-super">superadmin</span></td>
+      <td>Allt som <strong>admin</strong> kan, <strong>plus</strong>: lägga till/ta bort/döpa om hela
+          anläggningar, ändra CO₂-faktor, ställa visningstid per vy, hantera sidfotens
+          logotyper, aktivera en valfri bildsida, konfigurera backup, nollställa
+          produktionshistoriken samt byta lösenord.</td>
+    </tr>
+  </table>
+  <div class="note">Ändringar tillämpas <strong>live</strong> på skärmen inom några sekunder – ingen omstart behövs.</div>
+
+  <!-- 3 -->
+  <h2>3. Adminvyn – hantera omformare</h2>
+  <figure class="shot">
+    <div class="frame"><img src="screenshots/admin4-admin-begransad.png" alt="Adminvy"></div>
+    <figcaption>Adminvyn för att hantera omformare.</figcaption>
+  </figure>
+
+  <h3>Redigera en omformare</h3>
+  <ol class="steps">
+    <li>Välj anläggningen och klicka på omformaren du vill ändra.</li>
+    <li>Justera fält vid behov: <strong>namn</strong>, <strong>modell</strong>, <strong>IP-adress</strong>,
+        <strong>port</strong> (standard 1502), <strong>unit-ID</strong> (standard 71) och <strong>kapacitet</strong> (kW).</li>
+    <li>Spara. Skärmen uppdateras automatiskt.</li>
+  </ol>
+
+  <h3>Slå i eller ur drift</h3>
+  <p>Ta tillfälligt bort en omformare från skärmen utan att radera den – slå den
+  <strong>ur drift</strong>. En anläggning vars samtliga omformare är urkopplade visas inte alls.</p>
+
+  <h3>Lägga till eller ta bort en omformare</h3>
+  <ul>
+    <li><strong>Lägg till:</strong> välj anläggning, <em>Lägg till omformare</em>, fyll i uppgifterna och spara.</li>
+    <li><strong>Ta bort:</strong> öppna omformaren och välj <em>Ta bort</em>.</li>
+  </ul>
+  <div class="warn">
+    Korten på anläggningsvyn ligger på en rad och krymper automatiskt så att alla
+    omformare får plats. Lägg inte till fler än att de fortfarande går att läsa av på skärmen.
+  </div>
+
+  <!-- 4 -->
+  <h2>4. Superadmin – anläggningar &amp; inställningar</h2>
+  <figure class="shot">
+    <div class="frame"><img src="screenshots/admin5-superadmin.png" alt="Superadminvy"></div>
+    <figcaption>Superadminvyn med utökade inställningar.</figcaption>
+  </figure>
+
+  <h3>Anläggningar</h3>
+  <p>Lägg till, döp om eller ta bort en hel anläggning. Att lägga till en anläggning
+  skapar automatiskt en ny roterande vy på skärmen.</p>
+
+  <h3>CO₂-faktor</h3>
+  <p>Faktorn (standard 0,4 kg/kWh) styr hur mycket minskad CO₂ som visas. Ändra den
+  vid behov enligt er beräkningsgrund.</p>
+
+  <h3>Visningstid per vy</h3>
+  <p>Ställ in hur många sekunder varje vy visas innan karusellen roterar vidare (standard ~15 s).</p>
+
+  <h3>Sidfotens logotyper</h3>
+  <p>Välj, ladda upp och sortera logotyperna i sidfoten samt ändra deras storlek.</p>
+
+  <h3>Bildsida (valfri)</h3>
+  <p>Aktivera en extra sida med en rubrik och en eller flera bilder (t.ex.
+  samarbetspartners). En valfri bakgrundston kan lyfta fram bilder mot den mörka bakgrunden.</p>
+
+  <h3>Backup</h3>
+  <p>Konfigurera schemalagd, komprimerad kopia av databasen till en egen server
+  (via SSH-nyckel). Ställ in målplats, schema, komprimering och hur många kopior som sparas.
+  Använd <em>Kör backup nu</em> för att verifiera att det fungerar.</p>
+
+  <h3>Nollställ produktionshistorik</h3>
+  <p>Rensar systemets timdiagram och cache – används t.ex. för att ta bort simulerad
+  testdata inför skarp drift. Omformarnas egna totaler påverkas inte (de läses in igen).</p>
+  <div class="warn">Nollställningen kan inte ångras. Använd den bara när du är säker.</div>
+
+  <!-- 5 -->
+  <h2>5. Byta lösenord</h2>
+  <div class="card">
+    <ol class="steps">
+      <li>Logga in som <span class="role-pill role-super">superadmin</span>.</li>
+      <li>Gå till <strong>Konton &amp; lösenord</strong>.</li>
+      <li>Välj roll (admin eller superadmin), skriv nytt lösenord och spara.</li>
+    </ol>
+    <p style="margin:8px 0 0">Lösenordet lagras <strong>hashat</strong> (aldrig i klartext) och gäller direkt.</p>
+  </div>
+  <div class="note">
+    Byt de initiala lösenorden i samband med driftsättning. Välj gärna långa, unika lösenord.
+  </div>
+
+  <!-- 6 -->
+  <h2>6. Vanliga frågor &amp; felsökning</h2>
+  <table>
+    <tr><th>Symptom på skärmen</th><th>Vad det betyder / åtgärd</th></tr>
+    <tr>
+      <td><strong>Röd prick</strong> på en omformare</td>
+      <td>Omformaren svarar inte. Kontrollera IP-adress, nätverk och att omformaren är på.</td>
+    </tr>
+    <tr>
+      <td><strong>Gul banner:</strong> ”X av Y omformare offline”</td>
+      <td>Systemet når inte en eller flera omformare via Modbus. Effekt visas som 0,
+          men energitotaler behålls från senast kända värde.</td>
+    </tr>
+    <tr>
+      <td><strong>Röd banner:</strong> ”Ingen kontakt med servern”</td>
+      <td>Skärmen når inte systemet. Senast kända värden visas. Kontrollera att
+          skärmdatorn är igång och nätverket fungerar.</td>
+    </tr>
+    <tr>
+      <td>Klockan i sidfoten står stilla</td>
+      <td>Datan är gammal – se banners ovan. Sidfoten visar alltid ”Uppdaterad HH:MM:SS”.</td>
+    </tr>
+    <tr>
+      <td>Kommer inte in i admin</td>
+      <td>Kontrollera adressen <code>http://&lt;skärmens-IP&gt;:3000/admin</code> och att du är
+          på samma nätverk. Vid glömt lösenord: kontakta systemleverantören.</td>
+    </tr>
+  </table>
+
+  <footer class="doc">
+    PV Monitor – Inloggning &amp; administration · Dagliga uppgifter sköts i admingränssnittet och kräver ingen teknisk inloggning (SSH).
+  </footer>
+
+</main>
+</body>
+</html>
